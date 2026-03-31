@@ -1,0 +1,376 @@
+<template>
+  <div class="splash-container">
+    <image class="bg-img" src="../../assets/img/loading-bg.png"></image>
+
+    <div class="center-content">
+      <image class="center-logo" src="../../assets/img/logo.png"></image>
+    </div>
+
+    <div class="modal-overlay" if="{{showModal}}">
+      <div class="modal-content">
+        <text class="modal-title">用户协议及隐私政策</text>
+        <div class="modal-text-wrapper">
+          <text class="modal-text">
+            <span>尊敬的用户：欢迎使用“福悦测评”，在使用前请仔细阅读</span>
+            <a class="link" onclick="openPrivacy">《隐私政策》</a>
+            <span>及</span>
+            <a class="link" onclick="openAgreement">《用户协议》</a>
+            <span>，我们将严格遵守您同意的各项条款使用您的信息，以便为您提供更好的服务。点击“同意并继续”意味着您自愿遵守《隐私政策》，我们将严格保护您的个人信息，确保信息安全。</span>
+          </text>
+        </div>
+
+        <div class="modal-buttons">
+          <div class="btn-primary" onclick="handleAgree">
+            <text class="btn-primary-text">同意并继续</text>
+          </div>
+          <div class="btn-secondary" onclick="handleDisagree">
+            <text class="btn-secondary-text">不同意</text>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+import app from '@system.app'
+import prompt from '@system.prompt'
+import device from '@system.device'
+import $apis from '../../helper/apis'
+
+export default {
+  private: {
+    showModal: false,
+    timer: null,
+    hasInitUser: false
+  },
+
+  onInit() {
+    this.checkPrivacyAgreement()
+  },
+
+  normalizeStorageValue(value) {
+    if (value && typeof value === 'object' && value.data !== undefined) {
+      return value.data
+    }
+    return value
+  },
+
+  checkPrivacyAgreement() {
+    storage.get({
+      key: 'hasAgreedPrivacy',
+      success: (value) => {
+        const parsed = this.normalizeStorageValue(value)
+        if (parsed === 'true') {
+          this.prepareEnterApp()
+        } else {
+          this.showModal = true
+        }
+      },
+      fail: () => {
+        this.showModal = true
+      }
+    })
+  },
+
+  startToMain() {
+    this.timer = setTimeout(() => {
+      router.replace({
+        uri: '/pages/Main'
+      })
+    }, 1200)
+  },
+
+  prepareEnterApp() {
+    this.initUserIfNeeded().then(() => {
+      this.startToMain()
+    })
+  },
+
+  initUserIfNeeded() {
+    return new Promise((resolve) => {
+      storage.get({
+        key: 'hasRequestedInit',
+        success: (value) => {
+          const parsed = this.normalizeStorageValue(value)
+          if (parsed === 'true') {
+            resolve()
+          } else {
+            storage.set({
+              key: 'hasRequestedInit',
+              value: 'true',
+              success: () => {
+                this.initUser().then(resolve).catch(resolve)
+              },
+              fail: () => {
+                this.initUser().then(resolve).catch(resolve)
+              }
+            })
+          }
+        },
+        fail: () => {
+          storage.set({
+            key: 'hasRequestedInit',
+            value: 'true',
+            success: () => {
+              this.initUser().then(resolve).catch(resolve)
+            },
+            fail: () => {
+              this.initUser().then(resolve).catch(resolve)
+            }
+          })
+        }
+      })
+    })
+  },
+
+  initUser() {
+    if (this.hasInitUser) {
+      return Promise.resolve()
+    }
+
+    this.hasInitUser = true
+
+    return Promise.all([
+      new Promise((resolve) => {
+        device.getOAID({
+          success: (data) => {
+            resolve(data.oaid)
+          },
+          fail: () => {
+            resolve('')
+          }
+        })
+      }),
+      new Promise((resolve) => {
+        if (device.getUserId) {
+          device.getUserId({
+            success: (data) => {
+              resolve(data.userId)
+            },
+            fail: () => {
+              resolve('')
+            }
+          })
+        } else {
+          device.getId({
+            type: ['user'],
+            success: (data) => {
+              resolve(data.user || '')
+            },
+            fail: () => {
+              resolve('')
+            }
+          })
+        }
+      }),
+      new Promise((resolve) => {
+        device.getInfo({
+          success: (data) => {
+            resolve(data)
+          },
+          fail: () => {
+            resolve({})
+          }
+        })
+      })
+    ])
+      .then((results) => {
+        const oaid = results[0]
+        const androidId = results[1]
+        const deviceInfo = results[2]
+        const appInfo = app.getInfo()
+
+        const params = {
+          oaid: oaid,
+          android: androidId,
+          model: deviceInfo.model || '',
+          brand: deviceInfo.brand || '',
+          pn: appInfo.packageName || '',
+          app_version: appInfo.versionName || '',
+          os_version: deviceInfo.osVersionName || '',
+          qudao: 'vivo'
+        }
+
+        return $apis.user.init(params).then((data) => {
+          if (data && data.user_token) {
+            storage.set({
+              key: 'user_token',
+              value: data.user_token
+            })
+          }
+        })
+      })
+      .catch(() => {})
+  },
+
+  handleAgree() {
+    const goMain = () => {
+      this.showModal = false
+      this.prepareEnterApp()
+    }
+
+    storage.set({
+      key: 'hasAgreedPrivacy',
+      value: 'true',
+      success: goMain,
+      fail: goMain
+    })
+  },
+
+  handleDisagree() {
+    prompt.showToast({
+      message: '您未同意协议，应用即将退出'
+    })
+
+    setTimeout(() => {
+      app.exit()
+    }, 1200)
+  },
+
+  openAgreement() {
+    router.push({
+      uri: '/pages/Webview',
+      params: {
+        title: '用户协议',
+        url: 'https://api.51dsp.cn/index/agreement.do?pn=com.clfuyuecp.yscloud'
+      }
+    })
+  },
+
+  openPrivacy() {
+    router.push({
+      uri: '/pages/Webview',
+      params: {
+        title: '隐私政策',
+        url: 'https://api.51dsp.cn/index/privacy.do?pn=com.clfuyuecp.yscloud'
+      }
+    })
+  },
+
+  onHide() {
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
+  },
+
+  onDestroy() {
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
+  }
+}
+</script>
+
+<style>
+.splash-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+}
+
+.bg-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.center-content {
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(-100px);
+}
+
+.center-logo {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.48);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  width: 220px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 14px;
+  color: #222222;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.modal-text-wrapper {
+  margin-bottom: 14px;
+}
+
+.modal-text {
+  font-size: 11px;
+  color: #666666;
+  line-height: 16px;
+}
+
+.link {
+  color: #2a8cff;
+  text-decoration: underline;
+}
+
+.modal-buttons {
+  width: 100%;
+  flex-direction: column;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 34px;
+  border-radius: 17px;
+  justify-content: center;
+  align-items: center;
+  background-color: #2a8cff;
+  margin-bottom: 8px;
+}
+
+.btn-primary-text {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.btn-secondary {
+  width: 100%;
+  height: 34px;
+  border-radius: 17px;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f4;
+}
+
+.btn-secondary-text {
+  color: #666666;
+  font-size: 13px;
+}
+</style>

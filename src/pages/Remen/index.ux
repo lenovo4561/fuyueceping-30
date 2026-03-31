@@ -1,0 +1,299 @@
+<template>
+  <div class="page">
+    <list class="remen-list">
+      <list-item type="header" class="header-section">
+        <stack class="header-stack">
+          <image class="top-bg" src="../../assets/img/hotceping-bg.png"></image>
+          <div class="tabs-container">
+            <block for="{{tabs}}">
+              <div
+                class="{{'tab-item ' + (activeSource === $item.key ? 'active' : '')}}"
+                onclick="switchTab($item.key)"
+              >
+                <text
+                  class="{{'tab-text ' + (activeSource === $item.key ? 'active-text' : '')}}"
+                  >{{$item.title}}</text
+                >
+              </div>
+            </block>
+          </div>
+        </stack>
+      </list-item>
+
+      <list-item type="list" class="list-section">
+        <block for="{{testList}}">
+          <div class="list-item">
+            <image class="item-img" src="{{$item.image}}" style="background-color: #eeeeee;"></image>
+            <div class="item-info">
+              <text class="item-title">{{$item.title}}</text>
+              <div class="item-bottom">
+                <div class="item-tags">
+                  <text class="tag">{{$item.tag}}</text>
+                  <text class="tag">自我测评</text>
+                </div>
+                <div class="btn-box" onclick="startTest($item.id, $item.title)">
+                  <text class="start-btn">开始测试</text>
+                </div>
+              </div>
+            </div>
+          </div>
+        </block>
+        <text class="empty-tip" if="{{testList.length === 0}}">暂无测评数据</text>
+      </list-item>
+
+      <list-item type="spacer" class="bottom-spacer"></list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import { getRemenTabs, getRemenListBySource } from '../../helper/JS/remenDataAdapter'
+import { personalityTestData } from '../../helper/JS/xingge'
+import { careerPersonalityTest } from '../../helper/JS/shiye'
+import { lovePersonalityTest } from '../../helper/JS/aiqing'
+import { funQuizTest } from '../../helper/JS/quwei'
+
+const LOCAL_SOURCE_CONFIG = {
+  xingge: {
+    tab: '性格',
+    tag: '性格',
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/xg/',
+    data: personalityTestData
+  },
+  shiye: {
+    tab: '事业',
+    tag: '事业',
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/sy/',
+    data: careerPersonalityTest
+  },
+  aiqing: {
+    tab: '爱情',
+    tag: '爱情',
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/aq/',
+    data: lovePersonalityTest
+  },
+  quwei: {
+    tab: '趣味',
+    tag: '趣味',
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/qw/',
+    data: funQuizTest
+  }
+}
+
+function getLocalTabs() {
+  return Object.keys(LOCAL_SOURCE_CONFIG).map(function(key) {
+    return {
+      key: key,
+      title: LOCAL_SOURCE_CONFIG[key].tab
+    }
+  })
+}
+
+function getLocalListBySource(source) {
+  const cfg = LOCAL_SOURCE_CONFIG[source]
+  if (!cfg || !cfg.data || !Array.isArray(cfg.data.testList)) {
+    return []
+  }
+
+  return cfg.data.testList.map(function(item) {
+    return {
+      id: item.id,
+      title: item.name,
+      tag: cfg.tag,
+      source: source,
+      image: cfg.imagePrefix + String(item.id) + '.jpg'
+    }
+  })
+}
+
+export default {
+  data() {
+    return {
+      activeSource: 'xingge',
+      tabs: [],
+      testList: []
+    }
+  },
+
+  onInit() {
+    const adapterTabs = getRemenTabs() || []
+    this.tabs = adapterTabs.length > 0 ? adapterTabs : getLocalTabs()
+    this.refreshList()
+  },
+
+  refreshList() {
+    const adapterList = getRemenListBySource(this.activeSource) || []
+    this.testList = adapterList.length > 0 ? adapterList : getLocalListBySource(this.activeSource)
+  },
+
+  switchTab(source) {
+    if (!source || source === this.activeSource) {
+      return
+    }
+    this.activeSource = source
+    this.refreshList()
+  },
+
+  startTest(testId, testName) {
+    router.push({
+      uri: '/pages/RemenDati',
+      params: {
+        catTitle: this.activeSource,
+        testId: String(testId),
+        testName: testName,
+        testSource: this.activeSource
+      }
+    })
+  }
+}
+</script>
+
+<style>
+.page {
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background-color: #f7f8f9;
+}
+
+.remen-list {
+  flex: 1;
+  width: 100%;
+}
+
+.header-section {
+  width: 100%;
+  height: 120px;
+}
+
+.header-stack {
+  width: 100%;
+  height: 120px;
+}
+
+.top-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tabs-container {
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 0px;
+}
+
+.tab-item {
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  justify-content: center;
+  align-items: center;
+}
+
+.active {
+  background-color: #000000;
+}
+
+.tab-text {
+  font-size: 12px;
+  color: #333333;
+}
+
+.active-text {
+  color: #ffffff;
+}
+
+.list-section {
+  flex-direction: column;
+  width: 100%;
+  padding: 10px;
+}
+
+.list-item {
+  flex-direction: row;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  padding-left: 0px;
+  padding-right: 5px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.item-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-left: 8px;
+}
+
+.item-info {
+  flex: 1;
+  flex-direction: column;
+  margin-left: 12px;
+  height: 60px;
+  justify-content: space-between;
+}
+
+.item-title {
+  font-size: 10px;
+  color: #333333;
+  lines: 1;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+.item-bottom {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.item-tags {
+  flex-direction: row;
+}
+
+.tag {
+  background-color: #e6f6ff;
+  color: #33aaff;
+  font-size: 7px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.btn-box {
+  flex-direction: row;
+}
+
+.start-btn {
+  background-color: #ff5500;
+  color: #ffffff;
+  font-size: 8px;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+.bottom-spacer {
+  width: 100%;
+  height: 70px;
+}
+
+.empty-tip {
+  width: 100%;
+  text-align: center;
+  color: #999999;
+  font-size: 11px;
+  margin-top: 20px;
+}
+</style>

@@ -1,0 +1,343 @@
+<template>
+  <div class="add-xinqing-page">
+    <!-- 顶部背景 -->
+    <stack class="header">
+      <image class="bg-img" src="../../assets/img/jinrixinqing-bg.png"></image>
+      <div class="nav-bar">
+        <div class="back-btn" onclick="goBack">
+          <image class="back-icon" src="../../assets/img/back.png"></image>
+        </div>
+      </div>
+    </stack>
+
+    <!-- 内容区域 -->
+    <list class="content-list">
+      <list-item type="main-card" class="main-card-item">
+        <div class="main-card">
+          <text class="section-title">你今天心情怎么样?</text>
+          <div class="mood-grid">
+            <div class="mood-item {{selectedMood === index ? 'mood-item-active' : ''}}" for="{{(index, item) in moodList}}" onclick="selectMood(index)">
+              <image class="mood-icon" src="../../assets/img/{{item.icon}}.png"></image>
+              <text class="mood-name">{{item.name}}</text>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <text class="section-title source-title">你的情绪来源于哪里？</text>
+          <div class="source-grid">
+            <div class="source-item {{selectedSources.indexOf(index) > -1 ? 'source-item-active' : ''}} {{index === 8 || index === 9 ? 'source-item-large' : ''}}" for="{{(index, item) in sourceList}}" onclick="toggleSource(index)">  
+              <text class="source-name {{selectedSources.indexOf(index) > -1 ? 'source-name-active' : ''}}">{{item}}</text>
+            </div>
+          </div>
+
+          <input type="text" class="feeling-input" value="{{feelingText}}" placeholder="记录你此刻的感受" onchange="onFeelingInput"></input>
+        </div>
+      </list-item>
+
+      <list-item type="submit" class="submit-item">
+        <div class="submit-btn" onclick="onSubmit">
+          <text class="submit-text">确定</text>
+        </div>
+      </list-item>
+
+      <list-item type="spacer" class="spacer-item">
+      </list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+
+export default {
+  private: {
+    selectedDayIndex: -1,
+    selectedDayNum: 0,
+    selectedDayName: '今天',
+    selectedMood: -1,
+    moodList: [
+      { name: '开心', icon: '1' },
+      { name: '悲伤', icon: '2' },
+      { name: '无语', icon: '3' },
+      { name: '感恩', icon: '1' },
+      { name: '迷茫', icon: '2' },
+      { name: '疲惫', icon: '3' },
+      { name: '无语', icon: '1' },
+      { name: '焦虑', icon: '2' },
+      { name: '平静', icon: '3' },
+      { name: '愤怒', icon: '1' },
+      { name: '压力', icon: '2' },
+      { name: '无聊', icon: '3' }
+    ],
+    selectedSources: [0, 5],
+    sourceList: [
+      '工作', '上学', '家庭', '朋友',
+      '金钱', '健康', '伴侣', '宠物',
+      '自我感受', '人际关系'
+    ],
+    feelingText: ''
+  },
+  onInit() {
+    this.$page.setTitleBar({ visible: false })
+    const params = router.getParams ? router.getParams() : {}
+    if (params) {
+      if (params.dayIndex !== undefined) {
+        this.selectedDayIndex = Number(params.dayIndex)
+      }
+      if (params.dayNum !== undefined) {
+        this.selectedDayNum = Number(params.dayNum)
+      }
+      if (params.dayName) {
+        this.selectedDayName = params.dayName
+      }
+    }
+  },
+  goBack() {
+    router.back()
+  },
+  selectMood(index) {
+    this.selectedMood = index
+  },
+  onFeelingInput(e) {
+    this.feelingText = e.value
+  },
+  toggleSource(index) {
+    const arr = this.selectedSources
+    const pos = arr.indexOf(index)
+    if (pos > -1) {
+      arr.splice(pos, 1)
+    } else {
+      arr.push(index)
+    }
+  },
+  onSubmit() {
+    const iconMap = ['1.png', '2.png', '3.png', '1.png', '2.png', '3.png', '1.png', '2.png', '3.png', '1.png', '2.png', '3.png']
+    const moodIcon = this.selectedMood > -1 ? iconMap[this.selectedMood] : '1.png'
+    const submitRecord = {
+      dayIndex: this.selectedDayIndex,
+      dayNum: this.selectedDayNum,
+      dayName: this.selectedDayName,
+      icon: moodIcon,
+      tags: this.selectedSources.map((idx) => this.sourceList[idx]).filter((item) => !!item),
+      desc: this.feelingText || '记录了今日心情'
+    }
+
+    storage.set({
+      key: 'xinqing_new_record',
+      value: JSON.stringify(submitRecord),
+      success: () => {
+        router.back()
+      },
+      fail: () => {
+        router.back()
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+.add-xinqing-page {
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #F3F4F7;
+}
+
+.header {
+  width: 100%;
+  height: 137px;
+}
+
+.bg-img {
+  width: 100%;
+  height: 137px;
+  object-fit: cover;
+}
+
+.nav-bar {
+  width: 100%;
+  height: 29px;
+  margin-top: 23px;
+  padding: 0 10px;
+  flex-direction: row;
+  align-items: center;
+}
+
+.back-btn {
+  width: 19px;
+  height: 19px;
+  border-radius: 9px;
+  background-color: rgba(255, 255, 255, 0.95);
+  justify-content: center;
+  align-items: center;
+}
+
+.back-icon {
+  width: 9px;
+  height: 9px;
+}
+
+.title {
+  margin-left: 5px;
+  font-size: 19px;
+  font-weight: bold;
+  color: #FF4D0A;
+}
+
+.content-list {
+  flex: 1;
+  width: 100%;
+  padding: 0 10px;
+  margin-top: -39px;
+}
+
+.main-card-item {
+  width: 100%;
+}
+
+.main-card {
+  width: 100%;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 9px;
+  padding: 11px 8px 12px;
+  margin-bottom: 10px;
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1F2530;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mood-grid {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.mood-item {
+  width: 23%;
+  height: 57px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(244, 246, 248, 0.8);
+  border-radius: 6px;
+  margin-bottom: 5px;
+  border-width: 1px;
+  border-color: transparent;
+}
+
+.mood-item-active {
+  background-color: #E9F7FF;
+  border-color: #6FCFFF;
+}
+
+.mood-icon {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 4px;
+}
+
+.mood-name {
+  font-size: 12px;
+  color: #2B2B2B;
+}
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #EDEEF2;
+  margin-top: 3px;
+  margin-bottom: 9px;
+}
+
+.source-title {
+  margin-bottom: 8px;
+}
+
+.source-grid {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.source-item {
+  width: 23%;
+  height: 24px;
+  background-color: rgba(239, 241, 244, 0.8);
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.source-item-large {
+  width: 48%;
+}
+
+.source-item-active {
+  background-color: #CFEFFF;
+}
+
+.source-name {
+  font-size: 11px;
+  color: #747B84;
+}
+
+.source-name-active {
+  color: #28AEEA;
+}
+
+.feeling-input {
+  width: 100%;
+  height: 63px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #333333;
+  padding: 8px;
+  border-radius: 7px;
+  background-color: #EFF1F4;
+  placeholder-color: #A7ADB5;
+}
+
+.submit-item {
+  width: 100%;
+  flex-direction: column;
+  padding-top: 15px;
+  padding-bottom: 25px;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn {
+  width: 200px;
+  height: 44px;
+  background-color: #28AEEA;
+  border-radius: 22px;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn:active {
+  background-color: #1a96ce;
+}
+
+.submit-text {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.spacer-item {
+  height: 30px;
+}
+</style>
