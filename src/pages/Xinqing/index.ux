@@ -26,15 +26,21 @@
             </list-item>
           </list>
 
-          <!-- 未添加今日情绪，空状态 -->
-          <div class="empty-state" if="{{!hasAddedToday}}">
+          <!-- 展开/收起按钮 -->
+          <div class="expand-toggle-box" onclick="toggleExpand">
+            <text class="expand-text">{{ isExpanded ? '收起' : '展开' }}</text>
+            <image class="expand-icon {{ isExpanded ? 'icon-up' : '' }}" src="../../assets/img/xia.png"></image>
+          </div>
+
+          <!-- 未添加今日情绪，空状态 (展开状态时显示) -->
+          <div class="empty-state" if="{{isExpanded}}">
             <image src="../../assets/img/kong.png" class="empty-img"></image>
             <text class="empty-text">该日暂未添加心情~</text>
             <text class="add-btn" onclick="gotoAddXinqing">+添加当日心情</text>
           </div>
           
-          <!-- 历史记录标题 -->
-          <div class="history-title-box" if="{{hasAddedToday}}">
+          <!-- 历史记录标题 (收起状态时显示) -->
+          <div class="history-title-box" if="{{!isExpanded}}">
             <text class="history-month">04月</text>
             <text class="history-year">/ 2026年</text>
           </div>
@@ -42,7 +48,7 @@
       </list-item>
 
       <!-- 历史记录列表（当有记录时展示） -->
-      <list-item type="history" class="history-item" for="{{item in mockList}}" if="{{hasAddedToday}}">
+      <list-item type="history" class="history-item" for="{{item in mockList}}" if="{{!isExpanded}}">
          <div class="history-row">
            <div class="history-left">
               <div class="date-circle">
@@ -79,6 +85,7 @@ export default {
   data() {
     return {
       hasAddedToday: true,
+      isExpanded: false,
       selectedDayIndex: 8, // 假设选中今天 9号，索引为8
       monthDays: [
         { dayName: '周一', dayNum: 1, icon: '4.png' }
@@ -119,6 +126,9 @@ export default {
     }
     this.monthDays = days
   },
+  toggleExpand() {
+    this.isExpanded = !this.isExpanded
+  },
   selectDay(index) {
     this.selectedDayIndex = index
     const dayData = this.monthDays[index]
@@ -126,8 +136,10 @@ export default {
     if (dayData.icon === '4.png') {
       // 当前日期没有添加过心情，跳转去添加
       this.hasAddedToday = false
+      this.isExpanded = true // 自动展开，露出添加按钮
     } else {
       this.hasAddedToday = true
+      this.isExpanded = false // 选中已记录的天数时收起，显示历史记录
     }
   },
   consumeNewRecord() {
@@ -187,7 +199,7 @@ export default {
   gotoAddXinqing() {
     const currentDay = this.monthDays[this.selectedDayIndex] || {}
     router.push({
-      uri: 'pages/AddXinqing',
+      uri: '/pages/AddXinqing',
       params: {
         dayIndex: this.selectedDayIndex,
         dayNum: currentDay.dayNum || 0,
@@ -314,6 +326,30 @@ export default {
   width: 12px;
   height: 12px;
   margin-top: 3px;
+}
+
+.expand-toggle-box {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.expand-text {
+  font-size: 11px;
+  color: #B0B0B0;
+}
+
+.expand-icon {
+  width: 10px;
+  height: 10px;
+  margin-left: 5px;
+  object-fit: contain;
+}
+
+.icon-up {
+  transform: rotate(180deg);
 }
 
 .empty-state {
