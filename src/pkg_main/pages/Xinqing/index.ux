@@ -1,0 +1,835 @@
+﻿<template>
+  <div class="xinqing-page">
+    <list class="main-list">
+        <!-- 椤堕儴鑳屾櫙鍥?-->
+      <list-item type="banner" class="banner-item">
+        <image class="banner-img" src="../../assets/img/meirixinqing0bg1.png"></image>
+      </list-item>
+
+      <list-item type="content" class="content-item">
+        <div class="content-box">
+          <!-- 鏈堜唤閫夋嫨 -->
+          <div class="calendar-header">
+            <image class="arrow-icon" src="../../assets/img/zuo.png" onclick="prevMonth" />
+            <text class="month">{{monthText}}</text>
+            <image class="arrow-icon" src="../../assets/img/you.png" onclick="nextMonth" />
+          </div>
+
+          <!-- 鏈湀鏃ユ湡婊氬姩 -->
+          <list class="month-list" scrollpage="false">
+            <list-item type="day" class="day-item" for="{{(index, item) in monthDays}}" onclick="selectDay(index)">
+              <div class="day-inner {{selectedDayIndex === index ? 'active-day' : ''}}">
+                <text class="day-name {{selectedDayIndex === index ? 'text-white' : 'text-gray'}}">{{item.dayName}}</text>
+                <text class="day-num {{selectedDayIndex === index ? 'text-white' : 'text-dark'}}">{{item.dayNum}}</text>
+                <image class="day-icon" src="../../assets/img/{{item.displayIcon}}"></image>
+              </div>
+            </list-item>
+          </list>
+
+          <!-- 灞曞紑/鏀惰捣鎸夐挳 -->
+          <div class="expand-toggle-box" onclick="toggleExpand">
+            <text class="expand-text">{{ isExpanded ? '收起' : '展开' }}</text>
+            <image class="expand-icon {{ isExpanded ? 'icon-up' : '' }}" src="../../assets/img/xia.png"></image>
+          </div>
+        </div>
+      </list-item>
+
+      <list-item type="bottom-header" class="bottom-header-item">
+        <div class="bottom-card-top">
+          <!-- 鏈坊鍔犱粖鏃ユ儏缁紝绌虹姸鎬?(灞曞紑鐘舵€佹椂鏄剧ず) -->
+          <div class="empty-state" if="{{showEmptyState}}">
+            <image src="../../assets/img/kong.png" class="empty-img"></image>
+            <text class="empty-text">该日暂未添加心情~</text>
+            <text class="add-btn" onclick="gotoAddXinqing">+添加当日心情</text>
+          </div>
+          
+          <!-- 鍘嗗彶璁板綍鏍囬 (鏀惰捣鐘舵€佹椂涓旀病鏈夐€変腑璁板綍鏃舵樉绀? -->
+          <div class="history-title-box" if="{{showHistoryTitle}}">
+            <text class="history-month">{{currentMonth < 10 ? ('0' + currentMonth) : currentMonth}}月</text>
+            <text class="history-year">/ {{currentYear}}年</text>
+          </div>
+        </div>
+      </list-item>
+
+      <!-- 閫変腑璁板綍璇︽儏鍗＄墖 -->
+      <list-item type="detail" class="detail-item" if="{{showDetailCard}}">
+        <div class="detail-card">
+          <div class="detail-header">
+            <image class="detail-mood-icon" src="../../assets/img/{{selectedRecord.icon}}"></image>
+            <block for="{{detailTags}}">
+              <text class="detail-tag">{{$item}}</text>
+            </block>
+          </div>
+          <text class="detail-desc">{{selectedRecord.desc}}</text>
+          <div class="detail-footer">
+            <image class="detail-del-icon" src="../../assets/img/del.png" onclick="deleteRecord"></image>
+          </div>
+        </div>
+      </list-item>
+
+      <!-- 鍘嗗彶璁板綍鍒楄〃锛堝綋鏃犻€変腑璁板綍鏃跺睍绀猴級 -->
+      <list-item type="history" class="history-item" for="{{item in historyList}}" if="{{showHistoryList}}">
+         <div class="history-row">
+           <div class="history-left">
+              <div class="date-circle">
+                <text class="history-left-day">{{item.dayName}}</text>
+                <text class="history-left-date">{{item.dayDate}}</text>
+              </div>
+              <div class="dash-line">
+                <block for="{{dashSegments}}">
+                  <div class="dash-seg"></div>
+                </block>
+              </div>
+           </div>
+           <div class="history-right">
+                <div class="history-right-header">
+                  <image class="history-mood-icon" src="../../assets/img/{{item.icon}}"></image>
+                  <block for="{{item.tags}}">
+                   <text class="history-tag">{{$item}}</text>
+                  </block>
+                </div>
+              <text class="history-desc">{{item.desc}}</text>
+           </div>
+         </div>
+      </list-item>
+      
+      <list-item type="spacer" class="spacer-item">
+         <!-- 搴曢儴鐣欑櫧缁欏鑸爮 -->
+      </list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+
+export default {
+  props: {
+    activeTab: 0,
+    refreshTick: 0
+  },
+  data() {
+    return {
+      hasAddedToday: false,
+      isExpanded: true,
+      currentYear: 2026,
+      currentMonth: 4,
+      monthText: '2026年04月',
+      selectedDayIndex: 0,
+      monthDays: [
+        { dayName: '周一', dayNum: 1, icon: 'weijilu.png', displayIcon: 'weijilu2.png' }
+      ],
+      monthRecords: [],
+      historyList: [],
+      allRecords: [],
+      selectedRecord: null,
+      detailTags: [],
+      showEmptyState: true,
+      showHistoryTitle: false,
+      showDetailCard: false,
+      showHistoryList: false,
+      dashSegments: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50]
+    }
+  },
+  onInit() {
+    this.initCurrentMonth()
+    this.initMonthDays()
+    this.initSelectedDay()
+    this.updateViewState()
+    this.loadStoredRecords()
+  },
+  onReady() {
+    this.$watch('activeTab', (value) => {
+      if (Number(value) === 2) {
+        this.loadStoredRecords()
+      }
+    })
+    this.$watch('refreshTick', () => {
+      if (Number(this.activeTab) === 2) {
+        this.loadStoredRecords()
+      }
+    })
+  },
+  onShow() {
+    this.loadStoredRecords()
+  },
+  initCurrentMonth() {
+    const now = new Date()
+    this.currentYear = now.getFullYear()
+    this.currentMonth = now.getMonth() + 1
+    this.monthText = this.formatMonthText(this.currentYear, this.currentMonth)
+  },
+  formatMonthText(year, month) {
+    const safeMonth = Number(month)
+    const monthText = safeMonth < 10 ? ('0' + safeMonth) : String(safeMonth)
+    return String(year) + '年' + monthText + '月'
+  },
+  initSelectedDay() {
+    const now = new Date()
+    const isCurrentMonth = this.currentYear === now.getFullYear() && this.currentMonth === (now.getMonth() + 1)
+    const todayDate = isCurrentMonth ? now.getDate() : 1
+    const maxIndex = this.monthDays.length > 0 ? this.monthDays.length - 1 : 0
+    const dayIndex = Number(todayDate) - 1
+    this.selectedDayIndex = dayIndex >= 0 && dayIndex <= maxIndex ? dayIndex : 0
+    this.syncMonthDayDisplayIcons()
+  },
+  initMonthDays() {
+    const days = []
+    const weekNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    const totalDays = new Date(this.currentYear, this.currentMonth, 0).getDate()
+    for (let i = 1; i <= totalDays; i++) {
+       const weekIndex = new Date(this.currentYear, this.currentMonth - 1, i).getDay()
+
+       days.push({
+         dayName: weekNames[weekIndex],
+         dayNum: i,
+         icon: 'weijilu.png',
+         displayIcon: 'weijilu2.png'
+       })
+    }
+    this.monthDays = days
+    this.syncMonthDayDisplayIcons()
+  },
+  prevMonth() {
+    this.changeMonth(-1)
+  },
+  nextMonth() {
+    this.changeMonth(1)
+  },
+  changeMonth(offset) {
+    const nextOffset = Number(offset)
+    if (isNaN(nextOffset) || nextOffset === 0) {
+      return
+    }
+
+    let nextYear = this.currentYear
+    let nextMonth = this.currentMonth + nextOffset
+    if (nextMonth <= 0) {
+      nextYear = nextYear - 1
+      nextMonth = 12
+    }
+    if (nextMonth > 12) {
+      nextYear = nextYear + 1
+      nextMonth = 1
+    }
+
+    this.currentYear = nextYear
+    this.currentMonth = nextMonth
+    this.monthText = this.formatMonthText(nextYear, nextMonth)
+    this.initMonthDays()
+    this.initSelectedDay()
+    this.loadStoredRecords()
+  },
+  syncMonthDayDisplayIcons() {
+    const dayList = Array.isArray(this.monthDays) ? this.monthDays : []
+    const selectedIndex = Number(this.selectedDayIndex)
+    this.monthDays = dayList.map((item, idx) => {
+      const baseIcon = item.icon || 'weijilu.png'
+      const displayIcon = baseIcon === 'weijilu.png'
+        ? (idx === selectedIndex ? 'weijilu.png' : 'weijilu2.png')
+        : baseIcon
+      return {
+        dayName: item.dayName,
+        dayNum: item.dayNum,
+        icon: baseIcon,
+        displayIcon: displayIcon
+      }
+    })
+  },
+  toggleExpand() {
+    this.isExpanded = !this.isExpanded
+    this.updateViewState()
+  },
+  selectDay(index) {
+    const nextIndex = Number(index)
+    this.selectedDayIndex = isNaN(nextIndex) ? 0 : nextIndex
+    this.syncMonthDayDisplayIcons()
+    const dayData = this.monthDays[this.selectedDayIndex]
+    
+    if (dayData.icon === 'weijilu.png') {
+      // 褰撳墠鏃ユ湡娌℃湁娣诲姞杩囧績鎯咃紝璺宠浆鍘绘坊鍔?
+      this.hasAddedToday = false
+      this.isExpanded = true // 鑷姩灞曞紑锛岄湶鍑烘坊鍔犳寜閽?
+    } else {
+      this.hasAddedToday = true
+      this.isExpanded = false // 閫変腑宸茶褰曠殑澶╂暟鏃舵敹璧凤紝鏄剧ず璇︽儏鍗＄墖
+    }
+    this.updateSelectedRecord()
+  },
+  updateSelectedRecord() {
+    const dayInfo = this.monthDays[this.selectedDayIndex] || null
+    const dayNum = dayInfo ? Number(dayInfo.dayNum) : (this.selectedDayIndex + 1)
+    const records = this.monthRecords || []
+    this.selectedRecord = records.find((item) => {
+      const recordDayNum = Number(item.dayNum)
+      if (!isNaN(recordDayNum) && recordDayNum > 0) {
+        return recordDayNum === dayNum
+      }
+      return Number(item.dayIndex) === this.selectedDayIndex
+    }) || null
+    this.detailTags = this.selectedRecord && this.selectedRecord.tags && this.selectedRecord.tags.length
+      ? this.selectedRecord.tags
+      : []
+    this.updateViewState()
+  },
+  updateViewState() {
+    const expanded = !!this.isExpanded
+    const hasToday = !!this.hasAddedToday
+    const hasSelectedRecord = !!this.selectedRecord
+
+    // 浜や簰瑙勫垯锛?
+    // 1) 鏈夊綋鏃ヨ褰曪細榛樿鏀惰捣鏄剧ず褰撴棩璇︽儏锛涘睍寮€鏄剧ず褰撴湀鍒楄〃骞堕殣钘忓綋鏃ヨ鎯?
+    // 2) 鏃犲綋鏃ヨ褰曪細灞曞紑鏄剧ず绌虹姸鎬侊紱鏀惰捣鏄剧ず褰撴湀鍒楄〃
+    this.showEmptyState = expanded && !hasToday
+    this.showDetailCard = !expanded && hasToday && hasSelectedRecord
+    this.showHistoryTitle = expanded ? hasToday : !hasToday
+    this.showHistoryList = expanded ? hasToday : !hasToday
+  },
+  deleteRecord() {
+    if (!this.selectedRecord) return
+    const selectedKey = this.getRecordKey(this.selectedRecord)
+    const records = (this.allRecords || []).filter((item) => this.getRecordKey(item) !== selectedKey)
+    this.allRecords = records
+    
+    // 鏄剧ず璇︽儏鐨勬爣蹇椾綅鍦ㄥ垹闄ゅ悗閲嶇疆
+    this.hasAddedToday = false
+    this.isExpanded = true
+    
+    storage.set({
+      key: 'xinqing_records',
+      value: JSON.stringify(records),
+      success: () => {
+        this.applyStoredRecords(records)
+      }
+    })
+  },
+  parseRecordList(rawValue) {
+    if (!rawValue) {
+      return []
+    }
+
+    let text = rawValue
+    if (typeof rawValue === 'object' && rawValue.data !== undefined) {
+      text = rawValue.data
+    }
+
+    if (Array.isArray(text)) {
+      return text
+    }
+
+    if (typeof text !== 'string') {
+      return []
+    }
+
+    try {
+      const list = JSON.parse(text)
+      return Array.isArray(list) ? list : []
+    } catch (e) {
+      return []
+    }
+  },
+  normalizeRecords(list) {
+    const source = Array.isArray(list) ? list : []
+    const latestByDay = {}
+    source.forEach((item) => {
+      const key = this.getRecordKey(item)
+      if (!key) {
+        return
+      }
+      const prev = latestByDay[key]
+      const prevTime = Number(prev && prev.createdAt ? prev.createdAt : 0)
+      const nextTime = Number(item && item.createdAt ? item.createdAt : 0)
+      if (!prev || nextTime >= prevTime) {
+        latestByDay[key] = item
+      }
+    })
+
+    return Object.keys(latestByDay)
+      .map((key) => latestByDay[key])
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+  },
+  getRecordKey(record) {
+    if (!record) {
+      return ''
+    }
+    if (record.dateKey) {
+      return String(record.dateKey)
+    }
+
+    const year = Number(record.year)
+    const month = Number(record.month)
+    const dayNum = Number(record.dayNum)
+    if (!isNaN(year) && year > 0 && !isNaN(month) && month > 0 && !isNaN(dayNum) && dayNum > 0) {
+      return String(year) + '-' + String(month) + '-' + String(dayNum)
+    }
+
+    const dayIndex = Number(record.dayIndex)
+    if (!isNaN(dayIndex) && dayIndex >= 0) {
+      return 'legacy-' + String(dayIndex)
+    }
+    return ''
+  },
+  isRecordInCurrentMonth(record) {
+    const year = Number(record && record.year)
+    const month = Number(record && record.month)
+    if (!isNaN(year) && !isNaN(month) && year > 0 && month > 0) {
+      return year === this.currentYear && month === this.currentMonth
+    }
+
+    const now = new Date()
+    const isCurrentMonth = this.currentYear === now.getFullYear() && this.currentMonth === (now.getMonth() + 1)
+    return isCurrentMonth
+  },
+  loadStoredRecords() {
+    const that = this
+    storage.get({
+      key: 'xinqing_records',
+      success(data) {
+        const recordList = that.parseRecordList(data)
+        that.applyStoredRecords(recordList)
+      },
+      fail() {
+        that.applyStoredRecords([])
+      }
+    })
+  },
+  applyStoredRecords(recordList) {
+    const sourceList = Array.isArray(recordList) ? recordList.slice() : []
+    const sortedList = this.normalizeRecords(sourceList)
+    this.allRecords = sortedList
+    const monthList = sortedList.filter((item) => this.isRecordInCurrentMonth(item))
+    this.monthRecords = monthList
+    
+    const baseDays = this.monthDays.length > 0 ? this.monthDays : []
+    const days = baseDays.map((item) => {
+      return {
+        dayName: item.dayName,
+        dayNum: item.dayNum,
+        icon: 'weijilu.png'
+      }
+    })
+    const nextHistoryList = []
+
+    monthList.forEach((record) => {
+      const dayIndex = Number(record.dayIndex)
+      const dayNum = Number(record.dayNum)
+      const fallbackIndex = !isNaN(dayNum) && dayNum > 0 ? (dayNum - 1) : dayIndex
+      const validDayIndex = !isNaN(fallbackIndex) && fallbackIndex >= 0 && fallbackIndex < days.length
+      const icon = record.icon || '1.png'
+      if (validDayIndex) {
+        days[fallbackIndex].icon = icon
+      }
+      nextHistoryList.push({
+        dayName: record.dayName || (validDayIndex ? days[fallbackIndex].dayName : '记录'),
+        dayDate: record.dayNum || (validDayIndex ? days[fallbackIndex].dayNum : '--'),
+        icon: icon,
+        tags: record.tags && record.tags.length ? record.tags : ['记录'],
+        desc: record.desc || '记录了今日心情'
+      })
+    })
+
+    this.monthDays = days
+    this.syncMonthDayDisplayIcons()
+    this.historyList = nextHistoryList
+
+    const selectedDay = days[this.selectedDayIndex]
+    const selectedHasRecord = !!selectedDay && selectedDay.icon !== 'weijilu.png'
+
+    // 榛樿鐘舵€侊細濡傛灉閫変腑鏃ユ湡鏈夎褰曪紝鐩存帴灞曠ず褰撴棩璇︽儏锛涘惁鍒欏睍绀虹┖鐘舵€?
+    this.hasAddedToday = selectedHasRecord
+    this.isExpanded = !selectedHasRecord
+
+    this.updateSelectedRecord()
+  },
+  gotoAddXinqing() {
+    const currentDay = this.monthDays[this.selectedDayIndex] || {}
+    router.push({
+      uri: '/pkg_main/pages/AddXinqing',
+      params: {
+        year: this.currentYear,
+        month: this.currentMonth,
+        dayIndex: this.selectedDayIndex,
+        dayNum: currentDay.dayNum || 0,
+        dayName: currentDay.dayName || '今天'
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+.xinqing-page {
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+}
+
+.main-list {
+  flex: 1;
+  width: 100%;
+}
+
+.banner-item {
+  width: 100%;
+  flex-direction: column;
+  background-color: #F6F7F9;
+}
+
+.banner-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.content-item {
+  width: 100%;
+  flex-direction: column;
+  margin-top: -10px;
+  background-color: #F6F7F9;
+}
+
+.content-box {
+  width: 100%;
+  background-color: #FFFFFF;
+  border-radius: 13px;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  margin-top: -10px;
+  padding-top: 7px;
+  padding-bottom: 10px;
+  flex-direction: column;
+}
+
+.calendar-header {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 13px;
+  margin-bottom: 10px;
+}
+
+.arrow-icon {
+  width: 9px;
+  height: 9px;
+  object-fit: contain;
+}
+
+.month {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333333;
+  margin: 0 13px;
+}
+
+.month-list {
+  flex-direction: row;
+  height: 72px;
+  padding: 0 10px;
+  margin-bottom: 20px;
+}
+
+.day-item {
+  flex-direction: column;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.day-inner {
+  width: 32px;
+  height: 60px;
+  border-radius: 16px;
+  background-color: #FFF3EB;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active-day {
+  background-color: #FF5A00;
+}
+
+.day-name {
+  font-size: 8px;
+  color: #999999;
+}
+
+.text-white {
+  color: #FFFFFF;
+}
+
+.text-gray {
+  color: #999999;
+}
+
+.text-dark {
+  color: #333333;
+}
+
+.day-num {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.day-icon {
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+}
+
+.expand-toggle-box {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: -16px;
+  margin-bottom: 0px;
+}
+
+.expand-text {
+  font-size: 9px;
+  color: #B0B0B0;
+}
+
+.expand-icon {
+  width: 8px;
+  height: 8px;
+  margin-left: 3px;
+  object-fit: contain;
+}
+
+.icon-up {
+  transform: rotate(180deg);
+}
+
+.bottom-header-item {
+  width: 100%;
+  flex-direction: column;
+  background-color: #F6F7F9;
+}
+
+.bottom-card-top {
+  width: 100%;
+  background-color: #FFFFFF;
+  border-top-left-radius: 13px;
+  border-top-right-radius: 13px;
+  margin-top: 10px;
+  padding-top: 10px;
+  flex-direction: column;
+}
+
+.empty-state {
+  flex-direction: column;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.empty-img {
+  width: 133px;
+  height: 133px;
+  object-fit: contain;
+}
+
+.empty-text {
+  font-size: 9px;
+  color: #B0B0B0;
+  margin-top: 3px;
+}
+
+.add-btn {
+  margin-top: 13px;
+  width: 166px;
+  height: 30px;
+  border-radius: 15px;
+  background-color: #FF5A00;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 30px;
+}
+
+.history-title-box {
+  flex-direction: row;
+  align-items: flex-end;
+  padding: 0 10px;
+  margin-top: 27px;
+  margin-bottom: 15px;
+}
+
+.history-month {
+  font-size: 11px;
+  font-weight: bold;
+  color: #111111;
+}
+
+.history-year {
+  font-size: 8px;
+  color: #999999;
+  margin-left: 5px;
+  padding-bottom: 1px;
+}
+
+.history-item {
+  width: 100%;
+  flex-direction: column;
+  background-color: #FFFFFF;
+}
+
+.history-row {
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  padding: 0 10px;
+  position: relative;
+}
+
+.history-left {
+  flex-direction: column;
+  align-items: center;
+  width: 38px;
+  margin-right: 15px;
+}
+
+.date-circle {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background-color: #F6F7F9;
+  border-radius: 19px;
+  margin-bottom: 5px;
+}
+
+.history-left-day {
+  font-size: 8px;
+  color: #999999;
+}
+
+.history-left-date {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333333;
+  margin-top: -2px;
+}
+
+.dash-line {
+  position: absolute;
+  top: 43px;
+  bottom: 0px;
+  left: 18px;
+  width: 2px;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.dash-seg {
+  flex-shrink: 0;
+  width: 2px;
+  height: 2px;
+  background-color: #C0C0C0;
+  margin-bottom: 4px;
+}
+
+.history-right {
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 25px;
+}
+
+.history-right-header {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.history-mood-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+}
+
+.history-tag {
+  background-color: #E2F5FF;
+  color: #55B5E6;
+  font-size: 8px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  margin-right: 6px;
+}
+
+.history-desc {
+  font-size: 10px;
+  color: #333333;
+  line-height: 16px;
+  lines: 3;
+  text-overflow: ellipsis;
+}
+
+.detail-item {
+  width: 100%;
+  flex-direction: column;
+  padding: 10px 10px 76px 10px;
+  background-color: #FFFFFF;
+}
+
+.detail-card {
+  width: 100%;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  border-radius: 13px;
+  padding: 16px 10px;
+}
+
+.detail-header {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.detail-mood-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.detail-tag {
+  background-color: #E2F5FF;
+  color: #55B5E6;
+  font-size: 7px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+
+.detail-desc {
+  font-size: 10px;
+  color: #333333;
+  line-height: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-footer {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.detail-del-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.spacer-item {
+  flex: 1;
+  min-height: 86px;
+  width: 100%;
+  background-color: #FFFFFF;
+}
+</style>
+

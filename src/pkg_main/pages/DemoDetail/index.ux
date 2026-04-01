@@ -1,0 +1,62 @@
+﻿<!-- 
+  Copyright (c) 2021-present, the hapjs-platform Project Contributors
+  SPDX-License-Identifier: Apache-2.0
+-->
+
+<template>
+  <!-- template閲屽彧鑳芥湁涓€涓牴鑺傜偣 -->
+  <div class="wrapper">
+    <text class="title">{{ text }}</text>
+    <text class="desc"
+      >蹇簲鐢ㄦ槸绉诲姩浜掕仈缃戞柊鍨嬪簲鐢ㄧ敓鎬侊紝涓庢墜鏈虹郴缁熸繁搴︽暣鍚堬紝涓虹敤鎴锋彁渚涙洿鍔犲満鏅寲鐨勪綋楠屻€傚叿澶囦紶缁烝PP瀹屾暣鐨勫簲鐢ㄤ綋楠岋紝浣嗘棤闇€瀹夎銆佸嵆鐐瑰嵆鐢ㄣ€?    </text>
+    <text class="desc"
+      >鏍囧噯鏄敱涓绘祦鎵嬫満鍘傚晢缁勬垚鐨勫揩搴旂敤鑱旂洘鑱斿悎鍒跺畾銆傚叾鏍囧噯鐨勮癁鐢熷皢鍦ㄧ爺鍙戞帴鍙ｃ€佽兘鍔涙帴鍏ャ€佸紑鍙戣€呮湇鍔＄瓑灞傞潰寤鸿鏍囧噯骞冲彴锛屼互骞冲彴鍖栫殑鐢熸€佹ā寮忓涓汉寮€鍙戣€呭拰浼佷笟寮€鍙戣€呭叏鍝佺被寮€鏀?    </text>
+    <input
+      class="btn"
+      type="button"
+      value="娆㈣繋浣跨敤"
+      onclick="onWelcomeBtnClick"
+    />
+  </div>
+</template>
+
+<script>
+export default {
+  private: {
+    text: '蹇簲鐢ㄦ槸浠€涔堬紵'
+  },
+
+  onWelcomeBtnClick() {
+    $utils.showToast('蹇簲鐢細澶嶆潅鐢熸椿鐨勭畝鍗曠瓟妗堬紝璁╃敓娲绘洿椤虹晠')
+  }
+}
+</script>
+
+<style lang="scss">
+@import './../../../assets/styles/style.scss';
+
+.wrapper {
+  @include flex-box-mixins(column, center, center);
+  margin: 0 16 * $size-factor;
+  .title {
+    font-size: 18 * $size-factor;
+    text-align: center;
+    color: $black;
+  }
+  .desc {
+    margin-top: 18 * $size-factor;
+    color: $grey;
+    font-size: 16 * $size-factor;
+  }
+  .btn {
+    width: 150 * $size-factor;
+    height: 42 * $size-factor;
+    border-radius: 21 * $size-factor;
+    background-color: $brand;
+    color: $white;
+    font-size: 16 * $size-factor;
+    margin-top: 20 * $size-factor;
+  }
+}
+</style>
+

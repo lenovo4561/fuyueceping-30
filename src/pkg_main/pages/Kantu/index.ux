@@ -1,0 +1,139 @@
+﻿<template>
+  <div class="page">
+    <list class="kantu-list">
+      <list-item type="header" class="kantu-header">
+        <image class="top-bg" src="../../assets/img/kantuceping-bg1.png"></image>
+      </list-item>
+
+      <list-item type="content" class="grid-section">
+        <div class="grid-content">
+          <block for="{{kantuList}}">
+            <div class="grid-item" onclick="goToTest($item.id)">
+              <image class="item-img" src="{{$item.image}}"></image>
+              <div class="item-title-box">
+                <text class="item-title">{{$item.title}}</text>
+              </div>
+            </div>
+          </block>
+        </div>
+      </list-item>
+
+      <list-item type="spacer" class="bottom-spacer"></list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import { imagePersonalityTest } from '../../../helper/JS/tupianceshi'
+
+export default {
+  private: {
+    kantuList: []
+  },
+
+  onInit() {
+    const list = (imagePersonalityTest && imagePersonalityTest.testList) || []
+    this.kantuList = list.map(function(item) {
+      const idNum = Number(item.id)
+      const imgSuffix = idNum >= 16 ? '..jpg' : '.jpg'
+      return {
+        id: item.id,
+        title: item.name,
+        count: String(Math.floor(Math.random() * 3000) + 7000),
+        image: 'https://cdn.shijinzhuang.com/quick/jinancp/ktcp/' + String(item.id) + imgSuffix
+      }
+    })
+  },
+
+  goToTest(id) {
+    router.push({
+      uri: '/pkg_main/pages/KantuDetail',
+      params: {
+        id: String(id || 1)
+      }
+    })
+  }
+}
+</script>
+
+<style>
+.page {
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background-color: #f7f8f9;
+}
+
+.kantu-list {
+  flex: 1;
+  width: 100%;
+}
+
+.kantu-header {
+  width: 100%;
+  height: 140px;
+  padding: 0;
+}
+
+.top-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grid-section {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  padding: 0 10px;
+  margin-top: -44px;
+}
+
+.grid-content {
+  align-self: stretch;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 10px 10px 0 10px;
+}
+
+.grid-item {
+  width: 100%;
+  flex-direction: column;
+  margin-bottom: 12px;
+  background-color: #f6f6f6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.item-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  background-color: #eeeeee;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.item-title-box {
+  width: 100%;
+  padding: 10px 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.item-title {
+  font-size: 12px;
+  color: #333333;
+  lines: 1;
+  text-overflow: ellipsis;
+}
+
+.bottom-spacer {
+  width: 100%;
+  height: 72px;
+}
+</style>
+

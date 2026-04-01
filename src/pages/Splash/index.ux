@@ -1,9 +1,10 @@
-<template>
+﻿<template>
   <div class="splash-container">
-    <image class="bg-img" src="../../assets/img/loading-bg.png"></image>
+    <image class="bg-img" src="/pkg_main/assets/img/loading-bg.png"></image>
 
     <div class="center-content">
-      <image class="center-logo" src="../../assets/img/logo.png"></image>
+      <image class="center-logo" src="/pkg_main/assets/img/loading-icon.png"></image>
+      <image class="brand-text" src="/pkg_main/assets/img/fycp.png"></image>
     </div>
 
     <div class="modal-overlay" if="{{showModal}}">
@@ -11,11 +12,11 @@
         <text class="modal-title">用户协议及隐私政策</text>
         <div class="modal-text-wrapper">
           <text class="modal-text">
-            <span>尊敬的用户：欢迎使用“福悦测评”，在使用前请仔细阅读</span>
+            <span>尊敬的用户：欢迎使用"福悦测评"，在使用前请仔细阅读</span>
             <a class="link" onclick="openPrivacy">《隐私政策》</a>
             <span>及</span>
             <a class="link" onclick="openAgreement">《用户协议》</a>
-            <span>，我们将严格遵守您同意的各项条款使用您的信息，以便为您提供更好的服务。点击“同意并继续”意味着您自愿遵守《隐私政策》，我们将严格保护您的个人信息，确保信息安全。</span>
+            <span>，我们将严格遵守您同意的各项条款使用您的信息，以便为您提供更好的服务。点击"同意"意味着您已阅读并同意相关协议。</span>
           </text>
         </div>
 
@@ -78,7 +79,7 @@ export default {
   startToMain() {
     this.timer = setTimeout(() => {
       router.replace({
-        uri: '/pages/Main'
+        uri: '/pkg_main/pages/Main'
       })
     }, 1200)
   },
@@ -232,7 +233,7 @@ export default {
 
   openAgreement() {
     router.push({
-      uri: '/pages/Webview',
+      uri: '/pkg_main/pages/Webview',
       params: {
         title: '用户协议',
         url: 'https://api.51dsp.cn/index/agreement.do?pn=com.clfuyuecp.yscloud'
@@ -242,7 +243,7 @@ export default {
 
   openPrivacy() {
     router.push({
-      uri: '/pages/Webview',
+      uri: '/pkg_main/pages/Webview',
       params: {
         title: '隐私政策',
         url: 'https://api.51dsp.cn/index/privacy.do?pn=com.clfuyuecp.yscloud'
@@ -268,6 +269,7 @@ export default {
 
 <style>
 .splash-container {
+  flex-direction: column;
   width: 100%;
   height: 100%;
   position: relative;
@@ -285,15 +287,23 @@ export default {
 }
 
 .center-content {
-  z-index: 2;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  transform: translateY(-100px);
+  justify-content: center;
+  z-index: 2;
+  transform: translateY(-120px);
 }
 
 .center-logo {
-  width: 84px;
-  height: 84px;
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+}
+
+.brand-text {
+  width: 82px;
+  height: 18px;
+  margin-top: 10px;
   object-fit: contain;
 }
 
@@ -310,7 +320,7 @@ export default {
 }
 
 .modal-content {
-  width: 220px;
+  width: 230px;
   background-color: #ffffff;
   border-radius: 12px;
   padding: 16px;
@@ -319,7 +329,7 @@ export default {
 }
 
 .modal-title {
-  font-size: 14px;
+  font-size: 15px;
   color: #222222;
   font-weight: 600;
   margin-bottom: 10px;
@@ -374,3 +384,4 @@ export default {
   font-size: 13px;
 }
 </style>
+

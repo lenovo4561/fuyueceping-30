@@ -44,43 +44,43 @@
       "pages/Splash": {
         "component": "index"
       },
-      "pages/Main": {
+      "pkg_main/pages/Main": {
         "component": "index"
       },
-      "pages/Demo": {
+      "pkg_main/pages/Demo": {
         "component": "index"
       },
-      "pages/DemoDetail": {
+      "pkg_main/pages/DemoDetail": {
         "component": "index"
       },
-      "pages/Remen": {
+      "pkg_main/pages/Remen": {
         "component": "index"
       },
-      "pages/RemenDati": {
+      "pkg_main/pages/RemenDati": {
         "component": "index"
       },
-      "pages/RemenJielun": {
+      "pkg_main/pages/RemenJielun": {
         "component": "index"
       },
-      "pages/Kantu": {
+      "pkg_main/pages/Kantu": {
         "component": "index"
       },
-      "pages/KantuDetail": {
+      "pkg_main/pages/KantuDetail": {
         "component": "index"
       },
-      "pages/KantuJielun": {
+      "pkg_main/pages/KantuJielun": {
         "component": "index"
       },
-      "pages/Xinqing": {
+      "pkg_main/pages/Xinqing": {
         "component": "index"
       },
-      "pages/AddXinqing": {
+      "pkg_main/pages/AddXinqing": {
         "component": "index"
       },
-      "pages/Mine": {
+      "pkg_main/pages/Mine": {
         "component": "index"
       },
-      "pages/Webview": {
+      "pkg_main/pages/Webview": {
         "component": "index"
       }
     }
@@ -94,53 +94,53 @@
         "titleBar": false,
         "menu": false
       },
-      "pages/Main": {
+      "pkg_main/pages/Main": {
         "titleBar": false,
         "menu": false
       },
-      "pages/Demo": {
+      "pkg_main/pages/Demo": {
         "titleBarText": "快应用示例模版",
         "menu": false
       },
-      "pages/DemoDetail": {
+      "pkg_main/pages/DemoDetail": {
         "titleBarText": "详情页"
       },
-      "pages/Remen": {
+      "pkg_main/pages/Remen": {
         "titleBar": false,
         "menu": false
       },
-      "pages/RemenDati": {
+      "pkg_main/pages/RemenDati": {
         "titleBar": false,
         "menu": false
       },
-      "pages/RemenJielun": {
+      "pkg_main/pages/RemenJielun": {
         "titleBar": false,
         "menu": false
       },
-      "pages/Kantu": {
+      "pkg_main/pages/Kantu": {
         "titleBar": false,
         "menu": false
       },
-      "pages/KantuDetail": {
+      "pkg_main/pages/KantuDetail": {
         "titleBar": false,
         "menu": false
       },
-      "pages/KantuJielun": {
+      "pkg_main/pages/KantuJielun": {
         "titleBar": false,
         "menu": false
       },
-      "pages/Xinqing": {
+      "pkg_main/pages/Xinqing": {
         "titleBar": false,
         "menu": false
       },
-      "pages/Mine": {
+      "pkg_main/pages/Mine": {
         "titleBar": false,
         "menu": false
       },
-      "pages/Webview": {
+      "pkg_main/pages/Webview": {
         "titleBarText": "协议详情"
       },
-      "pages/AddXinqing": {
+      "pkg_main/pages/AddXinqing": {
         "titleBar": false,
         "menu": false
       }
@@ -148,5 +148,11 @@
   },
   "deviceTypeList": [
     "phone"
+  ],
+  "subpackages": [
+    {
+      "name": "pkg_main",
+      "resource": "pkg_main"
+    }
   ]
 }

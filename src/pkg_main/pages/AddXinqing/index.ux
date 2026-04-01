@@ -1,0 +1,484 @@
+﻿<template>
+  <div class="add-xinqing-page">
+    <!-- 椤堕儴鑳屾櫙 -->
+    <stack class="header">
+      <image class="bg-img" src="../../assets/img/jinrixinqing-bg.png"></image>
+      <div class="nav-bar">
+        <div class="back-btn" onclick="goBack">
+          <image class="back-icon" src="../../assets/img/back.png"></image>
+        </div>
+      </div>
+    </stack>
+
+    <!-- 鍐呭鍖哄煙 -->
+    <list class="content-list">
+      <list-item type="main-card" class="main-card-item">
+        <div class="main-card">
+          <text class="section-title">你今天心情怎么样？</text>
+          <div class="mood-grid">
+            <div class="mood-item {{selectedMood === index ? 'mood-item-active' : ''}}" for="{{(index, item) in moodList}}" onclick="selectMood(index)">
+              <image class="mood-icon" src="../../assets/img/{{item.icon}}"></image>
+              <text class="mood-name">{{item.name}}</text>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <text class="section-title source-title">你的情绪来源于哪里？</text>
+          <div class="source-grid">
+            <div class="source-item {{selectedSources.indexOf(index) > -1 ? 'source-item-active' : ''}} {{index === 8 || index === 9 ? 'source-item-large' : ''}}" for="{{(index, item) in sourceList}}" onclick="toggleSource(index)">  
+              <text class="source-name {{selectedSources.indexOf(index) > -1 ? 'source-name-active' : ''}}">{{item}}</text>
+            </div>
+          </div>
+
+          <textarea class="feeling-input" placeholder="记录你此刻的感受" onchange="onFeelingInput"></textarea>
+        </div>
+      </list-item>
+
+      <list-item type="submit" class="submit-item">
+        <div class="submit-btn" onclick="onSubmit">
+          <text class="submit-text">确定</text>
+        </div>
+      </list-item>
+
+      <list-item type="spacer" class="spacer-item">
+      </list-item>
+    </list>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+
+export default {
+  private: {
+    selectedYear: 2026,
+    selectedMonth: 4,
+    selectedDayIndex: -1,
+    selectedDayNum: 0,
+    selectedDayName: '今天',
+    selectedMood: -1,
+    moodList: [
+      { name: '困倦', icon: 'mood_sleepy.png' },
+      { name: '迷茫', icon: 'mood_happy.png' },
+      { name: '开心', icon: 'mood_happy.png' },
+      { name: '心动', icon: 'mood_love.png' },
+      { name: '平淡', icon: 'mood_neutral.png' },
+      { name: '无语', icon: 'mood_speechless.png' },
+      { name: '疲惫', icon: 'mood_tired.png' },
+      { name: '愤怒', icon: 'mood_angry.png' },
+      { name: '焦虑', icon: 'mood_stressed.png' },
+      { name: '难过', icon: 'mood_cry.png' },
+      { name: '平静', icon: 'mood_calm.png' },
+      { name: '压力', icon: 'mood_sad_pear.png' }
+    ],
+    selectedSources: [0, 5],
+    sourceList: [
+      '工作', '学习', '家庭', '朋友',
+      '金钱', '健康', '伴侣', '宠物',
+      '自我感受', '人际关系'
+    ],
+    feelingText: ''
+  },
+  onInit() {
+    this.$page.setTitleBar({ visible: false })
+    const queryParams = this.$page && (this.$page.query || this.$page.params) ? (this.$page.query || this.$page.params) : {}
+    const routerParams = router.getParams ? (router.getParams() || {}) : {}
+    const params = Object.assign({}, routerParams, queryParams)
+    if (params) {
+      if (params.year !== undefined) {
+        this.selectedYear = Number(params.year)
+      }
+      if (params.month !== undefined) {
+        this.selectedMonth = Number(params.month)
+      }
+      if (params.dayIndex !== undefined) {
+        this.selectedDayIndex = Number(params.dayIndex)
+      }
+      if (params.dayNum !== undefined) {
+        this.selectedDayNum = Number(params.dayNum)
+      }
+      if (params.dayName) {
+        this.selectedDayName = params.dayName
+      }
+    }
+
+    if (isNaN(this.selectedDayIndex) || this.selectedDayIndex < 0) {
+      const todayIndex = new Date().getDate() - 1
+      this.selectedDayIndex = todayIndex >= 0 ? todayIndex : 0
+    }
+    if (isNaN(this.selectedYear) || this.selectedYear <= 0) {
+      this.selectedYear = new Date().getFullYear()
+    }
+    if (isNaN(this.selectedMonth) || this.selectedMonth <= 0) {
+      this.selectedMonth = new Date().getMonth() + 1
+    }
+    if (isNaN(this.selectedDayNum) || this.selectedDayNum <= 0) {
+      this.selectedDayNum = this.selectedDayIndex + 1
+    }
+  },
+  goBack() {
+    router.back()
+  },
+  selectMood(index) {
+    this.selectedMood = index
+  },
+  onFeelingInput(e) {
+    this.feelingText = e.value
+  },
+  toggleSource(index) {
+    const arr = this.selectedSources
+    const pos = arr.indexOf(index)
+    if (pos > -1) {
+      arr.splice(pos, 1)
+    } else {
+      arr.push(index)
+    }
+  },
+  parseRecordList(rawValue) {
+    if (!rawValue) {
+      return []
+    }
+
+    let text = rawValue
+    if (typeof rawValue === 'object' && rawValue.data !== undefined) {
+      text = rawValue.data
+    }
+
+    if (Array.isArray(text)) {
+      return text
+    }
+
+    if (typeof text !== 'string') {
+      return []
+    }
+
+    try {
+      const list = JSON.parse(text)
+      return Array.isArray(list) ? list : []
+    } catch (e) {
+      return []
+    }
+  },
+  normalizeRecords(list) {
+    const source = Array.isArray(list) ? list : []
+    const latestByDay = {}
+    source.forEach((item) => {
+      const key = this.getRecordKey(item)
+      if (!key) {
+        return
+      }
+      const prev = latestByDay[key]
+      const prevTime = Number(prev && prev.createdAt ? prev.createdAt : 0)
+      const nextTime = Number(item && item.createdAt ? item.createdAt : 0)
+      if (!prev || nextTime >= prevTime) {
+        latestByDay[key] = item
+      }
+    })
+
+    return Object.keys(latestByDay)
+      .map((key) => latestByDay[key])
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+  },
+  getRecordKey(record) {
+    if (!record) {
+      return ''
+    }
+    if (record.dateKey) {
+      return String(record.dateKey)
+    }
+
+    const year = Number(record.year)
+    const month = Number(record.month)
+    const dayNum = Number(record.dayNum)
+    if (!isNaN(year) && year > 0 && !isNaN(month) && month > 0 && !isNaN(dayNum) && dayNum > 0) {
+      return String(year) + '-' + String(month) + '-' + String(dayNum)
+    }
+
+    const dayIndex = Number(record.dayIndex)
+    if (!isNaN(dayIndex) && dayIndex >= 0) {
+      return 'legacy-' + String(dayIndex)
+    }
+    return ''
+  },
+  upsertRecord(list, record) {
+    const safeList = this.normalizeRecords(list)
+    const targetKey = this.getRecordKey(record)
+    if (!targetKey) {
+      return [record].concat(safeList)
+    }
+
+    const nextList = safeList.filter((item) => this.getRecordKey(item) !== targetKey)
+    nextList.unshift(record)
+    return nextList
+  },
+  onSubmit() {
+    const moodIcon = this.selectedMood > -1 && this.moodList[this.selectedMood]
+      ? this.moodList[this.selectedMood].icon
+      : 'mood_happy.png'
+    const normalizedDayIndex = Number(this.selectedDayIndex)
+    const safeDayIndex = isNaN(normalizedDayIndex) || normalizedDayIndex < 0 ? (new Date().getDate() - 1) : normalizedDayIndex
+    const safeDayNum = Number(this.selectedDayNum) > 0 ? Number(this.selectedDayNum) : (safeDayIndex + 1)
+    const safeYear = Number(this.selectedYear) > 0 ? Number(this.selectedYear) : new Date().getFullYear()
+    const safeMonth = Number(this.selectedMonth) > 0 ? Number(this.selectedMonth) : (new Date().getMonth() + 1)
+    const submitRecord = {
+      year: safeYear,
+      month: safeMonth,
+      dayIndex: safeDayIndex,
+      dayNum: safeDayNum,
+      dayName: this.selectedDayName || '今天',
+      dateKey: String(safeYear) + '-' + String(safeMonth) + '-' + String(safeDayNum),
+      icon: moodIcon,
+      tags: this.selectedSources.map((idx) => this.sourceList[idx]).filter((item) => !!item),
+      desc: this.feelingText || '记录了今日心情',
+      createdAt: Date.now()
+    }
+
+    storage.get({
+      key: 'xinqing_records',
+      success: (data) => {
+        const oldList = this.parseRecordList(data)
+        const nextList = this.upsertRecord(oldList, submitRecord)
+        storage.set({
+          key: 'xinqing_records',
+          value: JSON.stringify(nextList),
+          success: () => {
+            storage.set({
+              key: 'xinqing_new_record',
+              value: JSON.stringify(submitRecord),
+              success: () => {
+                router.back()
+              },
+              fail: () => {
+                router.back()
+              }
+            })
+          },
+          fail: () => {
+            router.back()
+          }
+        })
+      },
+      fail: () => {
+        const nextList = this.upsertRecord([], submitRecord)
+        storage.set({
+          key: 'xinqing_records',
+          value: JSON.stringify(nextList),
+          success: () => {
+            router.back()
+          },
+          fail: () => {
+            router.back()
+          }
+        })
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+.add-xinqing-page {
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #F3F4F7;
+}
+
+.header {
+  width: 100%;
+  height: 137px;
+}
+
+.bg-img {
+  width: 100%;
+  height: 137px;
+  object-fit: cover;
+}
+
+.nav-bar {
+  width: 100%;
+  height: 29px;
+  margin-top: 23px;
+  padding: 0 10px;
+  flex-direction: row;
+  align-items: center;
+}
+
+.back-btn {
+  width: 19px;
+  height: 19px;
+  border-radius: 9px;
+  background-color: rgba(255, 255, 255, 0.95);
+  justify-content: center;
+  align-items: center;
+}
+
+.back-icon {
+  width: 9px;
+  height: 9px;
+}
+
+.title {
+  margin-left: 5px;
+  font-size: 19px;
+  font-weight: bold;
+  color: #FF4D0A;
+}
+
+.content-list {
+  flex: 1;
+  width: 100%;
+  padding: 0 10px;
+  margin-top: -39px;
+}
+
+.main-card-item {
+  width: 100%;
+}
+
+.main-card {
+  width: 100%;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 9px;
+  padding: 11px 8px 12px;
+  margin-bottom: 10px;
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #1F2530;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mood-grid {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.mood-item {
+  width: 23%;
+  height: 57px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(244, 246, 248, 0.8);
+  border-radius: 6px;
+  margin-bottom: 5px;
+  border-width: 1px;
+  border-color: transparent;
+}
+
+.mood-item-active {
+  background-color: #E9F7FF;
+  border-color: #6FCFFF;
+}
+
+.mood-icon {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 4px;
+}
+
+.mood-name {
+  font-size: 12px;
+  color: #2B2B2B;
+}
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #EDEEF2;
+  margin-top: 3px;
+  margin-bottom: 9px;
+}
+
+.source-title {
+  margin-bottom: 8px;
+}
+
+.source-grid {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.source-item {
+  width: 23%;
+  height: 24px;
+  background-color: rgba(239, 241, 244, 0.8);
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.source-item-large {
+  width: 48%;
+}
+
+.source-item-active {
+  background-color: #CFEFFF;
+}
+
+.source-name {
+  font-size: 11px;
+  color: #747B84;
+}
+
+.source-name-active {
+  color: #28AEEA;
+}
+
+.feeling-input {
+  width: 100%;
+  height: 96px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #333333;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background-color: #EFF1F4;
+  placeholder-color: #A7ADB5;
+}
+
+.submit-item {
+  width: 100%;
+  flex-direction: column;
+  padding-top: 15px;
+  padding-bottom: 25px;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn {
+  width: 200px;
+  height: 44px;
+  background-color: #28AEEA;
+  border-radius: 22px;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn:active {
+  background-color: #1a96ce;
+}
+
+.submit-text {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.spacer-item {
+  height: 30px;
+}
+</style>
+
