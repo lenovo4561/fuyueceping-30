@@ -17,7 +17,7 @@
           <text class="section-title">你今天心情怎么样?</text>
           <div class="mood-grid">
             <div class="mood-item {{selectedMood === index ? 'mood-item-active' : ''}}" for="{{(index, item) in moodList}}" onclick="selectMood(index)">
-              <image class="mood-icon" src="../../assets/img/{{item.icon}}.png"></image>
+              <image class="mood-icon" src="../../assets/img/{{item.icon}}"></image>
               <text class="mood-name">{{item.name}}</text>
             </div>
           </div>
@@ -31,7 +31,7 @@
             </div>
           </div>
 
-          <input type="text" class="feeling-input" value="{{feelingText}}" placeholder="记录你此刻的感受" onchange="onFeelingInput"></input>
+          <textarea class="feeling-input" value="{{feelingText}}" placeholder="记录你此刻的感受" oninput="onFeelingInput" onchange="onFeelingInput"></textarea>
         </div>
       </list-item>
 
@@ -53,23 +53,25 @@ import storage from '@system.storage'
 
 export default {
   private: {
+    selectedYear: 2026,
+    selectedMonth: 4,
     selectedDayIndex: -1,
     selectedDayNum: 0,
     selectedDayName: '今天',
     selectedMood: -1,
     moodList: [
-      { name: '开心', icon: '1' },
-      { name: '悲伤', icon: '2' },
-      { name: '无语', icon: '3' },
-      { name: '感恩', icon: '1' },
-      { name: '迷茫', icon: '2' },
-      { name: '疲惫', icon: '3' },
-      { name: '无语', icon: '1' },
-      { name: '焦虑', icon: '2' },
-      { name: '平静', icon: '3' },
-      { name: '愤怒', icon: '1' },
-      { name: '压力', icon: '2' },
-      { name: '无聊', icon: '3' }
+      { name: '疲惫', icon: 'mood_sleepy.png' },
+      { name: '迷茫', icon: 'mood_happy.png' },
+      { name: '开心', icon: 'mood_happy.png' },
+      { name: '心动', icon: 'mood_love.png' },
+      { name: '平淡', icon: 'mood_neutral.png' },
+      { name: '无语', icon: 'mood_speechless.png' },
+      { name: '疲惫', icon: 'mood_tired.png' },
+      { name: '愤怒', icon: 'mood_angry.png' },
+      { name: '焦虑', icon: 'mood_stressed.png' },
+      { name: '难过', icon: 'mood_cry.png' },
+      { name: '平静', icon: 'mood_calm.png' },
+      { name: '压力', icon: 'mood_sad_pear.png' }
     ],
     selectedSources: [0, 5],
     sourceList: [
@@ -81,8 +83,16 @@ export default {
   },
   onInit() {
     this.$page.setTitleBar({ visible: false })
-    const params = router.getParams ? router.getParams() : {}
+    const queryParams = this.$page && (this.$page.query || this.$page.params) ? (this.$page.query || this.$page.params) : {}
+    const routerParams = router.getParams ? (router.getParams() || {}) : {}
+    const params = Object.assign({}, routerParams, queryParams)
     if (params) {
+      if (params.year !== undefined) {
+        this.selectedYear = Number(params.year)
+      }
+      if (params.month !== undefined) {
+        this.selectedMonth = Number(params.month)
+      }
       if (params.dayIndex !== undefined) {
         this.selectedDayIndex = Number(params.dayIndex)
       }
@@ -92,6 +102,20 @@ export default {
       if (params.dayName) {
         this.selectedDayName = params.dayName
       }
+    }
+
+    if (isNaN(this.selectedDayIndex) || this.selectedDayIndex < 0) {
+      const todayIndex = new Date().getDate() - 1
+      this.selectedDayIndex = todayIndex >= 0 ? todayIndex : 0
+    }
+    if (isNaN(this.selectedYear) || this.selectedYear <= 0) {
+      this.selectedYear = new Date().getFullYear()
+    }
+    if (isNaN(this.selectedMonth) || this.selectedMonth <= 0) {
+      this.selectedMonth = new Date().getMonth() + 1
+    }
+    if (isNaN(this.selectedDayNum) || this.selectedDayNum <= 0) {
+      this.selectedDayNum = this.selectedDayIndex + 1
     }
   },
   goBack() {
@@ -112,26 +136,142 @@ export default {
       arr.push(index)
     }
   },
-  onSubmit() {
-    const iconMap = ['1.png', '2.png', '3.png', '1.png', '2.png', '3.png', '1.png', '2.png', '3.png', '1.png', '2.png', '3.png']
-    const moodIcon = this.selectedMood > -1 ? iconMap[this.selectedMood] : '1.png'
-    const submitRecord = {
-      dayIndex: this.selectedDayIndex,
-      dayNum: this.selectedDayNum,
-      dayName: this.selectedDayName,
-      icon: moodIcon,
-      tags: this.selectedSources.map((idx) => this.sourceList[idx]).filter((item) => !!item),
-      desc: this.feelingText || '记录了今日心情'
+  parseRecordList(rawValue) {
+    if (!rawValue) {
+      return []
     }
 
-    storage.set({
-      key: 'xinqing_new_record',
-      value: JSON.stringify(submitRecord),
-      success: () => {
-        router.back()
+    let text = rawValue
+    if (typeof rawValue === 'object' && rawValue.data !== undefined) {
+      text = rawValue.data
+    }
+
+    if (Array.isArray(text)) {
+      return text
+    }
+
+    if (typeof text !== 'string') {
+      return []
+    }
+
+    try {
+      const list = JSON.parse(text)
+      return Array.isArray(list) ? list : []
+    } catch (e) {
+      return []
+    }
+  },
+  normalizeRecords(list) {
+    const source = Array.isArray(list) ? list : []
+    const latestByDay = {}
+    source.forEach((item) => {
+      const key = this.getRecordKey(item)
+      if (!key) {
+        return
+      }
+      const prev = latestByDay[key]
+      const prevTime = Number(prev && prev.createdAt ? prev.createdAt : 0)
+      const nextTime = Number(item && item.createdAt ? item.createdAt : 0)
+      if (!prev || nextTime >= prevTime) {
+        latestByDay[key] = item
+      }
+    })
+
+    return Object.keys(latestByDay)
+      .map((key) => latestByDay[key])
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+  },
+  getRecordKey(record) {
+    if (!record) {
+      return ''
+    }
+    if (record.dateKey) {
+      return String(record.dateKey)
+    }
+
+    const year = Number(record.year)
+    const month = Number(record.month)
+    const dayNum = Number(record.dayNum)
+    if (!isNaN(year) && year > 0 && !isNaN(month) && month > 0 && !isNaN(dayNum) && dayNum > 0) {
+      return String(year) + '-' + String(month) + '-' + String(dayNum)
+    }
+
+    const dayIndex = Number(record.dayIndex)
+    if (!isNaN(dayIndex) && dayIndex >= 0) {
+      return 'legacy-' + String(dayIndex)
+    }
+    return ''
+  },
+  upsertRecord(list, record) {
+    const safeList = this.normalizeRecords(list)
+    const targetKey = this.getRecordKey(record)
+    if (!targetKey) {
+      return [record].concat(safeList)
+    }
+
+    const nextList = safeList.filter((item) => this.getRecordKey(item) !== targetKey)
+    nextList.unshift(record)
+    return nextList
+  },
+  onSubmit() {
+    const moodIcon = this.selectedMood > -1 && this.moodList[this.selectedMood]
+      ? this.moodList[this.selectedMood].icon
+      : 'mood_happy.png'
+    const normalizedDayIndex = Number(this.selectedDayIndex)
+    const safeDayIndex = isNaN(normalizedDayIndex) || normalizedDayIndex < 0 ? (new Date().getDate() - 1) : normalizedDayIndex
+    const safeDayNum = Number(this.selectedDayNum) > 0 ? Number(this.selectedDayNum) : (safeDayIndex + 1)
+    const safeYear = Number(this.selectedYear) > 0 ? Number(this.selectedYear) : new Date().getFullYear()
+    const safeMonth = Number(this.selectedMonth) > 0 ? Number(this.selectedMonth) : (new Date().getMonth() + 1)
+    const submitRecord = {
+      year: safeYear,
+      month: safeMonth,
+      dayIndex: safeDayIndex,
+      dayNum: safeDayNum,
+      dayName: this.selectedDayName || '今天',
+      dateKey: String(safeYear) + '-' + String(safeMonth) + '-' + String(safeDayNum),
+      icon: moodIcon,
+      tags: this.selectedSources.map((idx) => this.sourceList[idx]).filter((item) => !!item),
+      desc: this.feelingText || '记录了今日心情',
+      createdAt: Date.now()
+    }
+
+    storage.get({
+      key: 'xinqing_records',
+      success: (data) => {
+        const oldList = this.parseRecordList(data)
+        const nextList = this.upsertRecord(oldList, submitRecord)
+        storage.set({
+          key: 'xinqing_records',
+          value: JSON.stringify(nextList),
+          success: () => {
+            storage.set({
+              key: 'xinqing_new_record',
+              value: JSON.stringify(submitRecord),
+              success: () => {
+                router.back()
+              },
+              fail: () => {
+                router.back()
+              }
+            })
+          },
+          fail: () => {
+            router.back()
+          }
+        })
       },
       fail: () => {
-        router.back()
+        const nextList = this.upsertRecord([], submitRecord)
+        storage.set({
+          key: 'xinqing_records',
+          value: JSON.stringify(nextList),
+          success: () => {
+            router.back()
+          },
+          fail: () => {
+            router.back()
+          }
+        })
       }
     })
   }
@@ -299,11 +439,11 @@ export default {
 
 .feeling-input {
   width: 100%;
-  height: 63px;
+  height: 96px;
   margin-top: 3px;
   font-size: 11px;
   color: #333333;
-  padding: 8px;
+  padding: 8px 10px;
   border-radius: 7px;
   background-color: #EFF1F4;
   placeholder-color: #A7ADB5;

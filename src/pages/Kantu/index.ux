@@ -1,30 +1,25 @@
 <template>
   <div class="page">
-    <div class="kantu-header">
-      <image class="top-bg" src="../../assets/img/kantuceping-bg1.png"></image>
-    </div>
+    <list class="kantu-list">
+      <list-item type="header" class="kantu-header">
+        <image class="top-bg" src="../../assets/img/kantuceping-bg1.png"></image>
+      </list-item>
 
-    <div class="grid-section">
-      <div class="grid-card-container">
-        <div class="blur-layer"></div>
-        <div class="frost-overlay"></div>
-
+      <list-item type="content" class="grid-section">
         <div class="grid-content">
           <block for="{{kantuList}}">
             <div class="grid-item" onclick="goToTest($item.id)">
               <image class="item-img" src="{{$item.image}}"></image>
-              <text class="item-title">{{$item.title}}</text>
-              <div class="item-bottom">
-                <image class="fire-icon" src="../../assets/img/Frame.png"></image>
-                <text class="item-count">{{$item.count}}人测过</text>
+              <div class="item-title-box">
+                <text class="item-title">{{$item.title}}</text>
               </div>
             </div>
           </block>
         </div>
-      </div>
-    </div>
+      </list-item>
 
-    <div class="bottom-spacer"></div>
+      <list-item type="spacer" class="bottom-spacer"></list-item>
+    </list>
   </div>
 </template>
 
@@ -71,100 +66,69 @@ export default {
   background-color: #f7f8f9;
 }
 
+.kantu-list {
+  flex: 1;
+  width: 100%;
+}
+
 .kantu-header {
-  width: 250px;
+  width: 100%;
   height: 140px;
+  padding: 0;
 }
 
 .top-bg {
-  width: 250px;
+  width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .grid-section {
-  flex: 1;
-  width: 250px;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
   padding: 0 10px;
   margin-top: -44px;
 }
 
-.grid-card-container {
-  width: 230px;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.blur-layer {
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  filter: blur(4px);
-}
-
-.frost-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 230px;
-  height: 96px;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.95), #ffffff);
-}
-
 .grid-content {
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 10px 0 0 0;
-  position: relative;
+  align-self: stretch;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 10px 10px 0 10px;
 }
 
 .grid-item {
-  width: 48.3%;
+  width: 100%;
   flex-direction: column;
   margin-bottom: 12px;
-  background-color: #ffffff;
-  border-radius: 10px;
+  background-color: #f6f6f6;
+  border-radius: 8px;
   overflow: hidden;
-  padding-bottom: 10px;
 }
 
 .item-img {
   width: 100%;
-  height: 128px;
+  height: 140px;
   object-fit: cover;
-  background-color: #dfe3e6;
+  background-color: #eeeeee;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.item-title-box {
+  width: 100%;
+  padding: 10px 8px;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .item-title {
-  font-size: 10px;
-  color: #2f3340;
-  font-weight: 600;
-  margin: 8px 8px 6px 8px;
-  lines: 2;
+  font-size: 12px;
+  color: #333333;
+  lines: 1;
   text-overflow: ellipsis;
-}
-
-.item-bottom {
-  flex-direction: row;
-  align-items: center;
-  padding: 0 8px;
-}
-
-.fire-icon {
-  width: 10px;
-  height: 10px;
-  margin-right: 4px;
-}
-
-.item-count {
-  font-size: 9px;
-  color: #9ba0a6;
 }
 
 .bottom-spacer {

@@ -263,7 +263,7 @@ export default {
   width: 108px;
   height: 42px;
   border-radius: 21px;
-  background-color: #ff6420;
+  background-color: #FF5A00;
   align-items: center;
   justify-content: center;
 }
@@ -272,7 +272,7 @@ export default {
   width: 108px;
   height: 42px;
   border-radius: 21px;
-  background-color: #00d3ff;
+  background-color: #000000;
   align-items: center;
   justify-content: center;
 }

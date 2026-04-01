@@ -9,7 +9,7 @@
       <tab-content class="tab-content">
         <remen-page></remen-page>
         <kantu-page></kantu-page>
-        <xinqing-page></xinqing-page>
+        <xinqing-page active-tab="{{currentIndex}}" refresh-tick="{{refreshTick}}"></xinqing-page>
         <mine-page></mine-page>
       </tab-content>
     </tabs>
@@ -61,7 +61,8 @@ import storage from '@system.storage'
 
 export default {
   private: {
-    currentIndex: 0
+    currentIndex: 0,
+    refreshTick: 0
   },
 
   onInit() {
@@ -80,6 +81,10 @@ export default {
         })
       }
     })
+  },
+
+  onShow() {
+    this.refreshTick = Number(this.refreshTick || 0) + 1
   },
 
   changeTab(e) {
