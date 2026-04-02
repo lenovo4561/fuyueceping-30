@@ -1,7 +1,7 @@
-import { personalityTestData } from './xingge'
-import { careerPersonalityTest } from './shiye'
-import { lovePersonalityTest } from './aiqing'
-import { funQuizTest } from './quwei'
+import { personalityTest } from './xingge'
+import { careerTest } from './shiye'
+import { loveCoupleTest } from './aiqing'
+import { funTest } from './quwei'
 import { mentalHealthTest } from './xinlizhuangtai'
 import { depressionRiskAssessment } from './yiyufengxian'
 import { anxietyAssessmentTest } from './jiaolu'
@@ -11,29 +11,29 @@ const REMEN_SOURCE_CONFIG = {
     key: 'xingge',
     tab: '性格',
     tag: '性格',
-    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/xg/',
-    data: personalityTestData
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/fuycp/rmcp/xg/',
+    data: personalityTest
   },
   shiye: {
     key: 'shiye',
     tab: '事业',
     tag: '事业',
-    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/sy/',
-    data: careerPersonalityTest
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/fuycp/rmcp/sy/',
+    data: careerTest
   },
   aiqing: {
     key: 'aiqing',
     tab: '爱情',
     tag: '爱情',
-    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/aq/',
-    data: lovePersonalityTest
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/fuycp/rmcp/aq/',
+    data: loveCoupleTest
   },
   quwei: {
     key: 'quwei',
     tab: '趣味',
     tag: '趣味',
-    imagePrefix: 'https://cdn.shijinzhuang.com/quick/jinancp/qwcp/qw/',
-    data: funQuizTest
+    imagePrefix: 'https://cdn.shijinzhuang.com/quick/fuycp/rmcp/qw/',
+    data: funTest
   },
   xinlizhuangtai: {
     key: 'xinlizhuangtai',
@@ -237,6 +237,43 @@ function getMatchTypeByScore(scoreRule, score) {
   return null
 }
 
+function normalizeConclusionKey(key) {
+  return String(key || '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase()
+}
+
+function getConclusionByLevelKey(conclusion, levelKey) {
+  if (!conclusion || !levelKey) return ''
+  if (conclusion[levelKey]) return conclusion[levelKey]
+
+  const target = normalizeConclusionKey(levelKey)
+  const keys = Object.keys(conclusion)
+  for (let i = 0; i < keys.length; i++) {
+    if (normalizeConclusionKey(keys[i]) === target) {
+      return conclusion[keys[i]] || ''
+    }
+  }
+  return ''
+}
+
+function getResultLevelMatch(scoreRule, score) {
+  const resultLevel = scoreRule && scoreRule.resultLevel
+  if (!resultLevel || typeof resultLevel !== 'object') return null
+
+  const keys = Object.keys(resultLevel)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    const item = resultLevel[key]
+    if (!item || !Array.isArray(item.range) || item.range.length !== 2) continue
+    if (score >= item.range[0] && score <= item.range[1]) {
+      return { key: key, meta: item }
+    }
+  }
+
+  return null
+}
+
 function calcRemenResult(source, id, answerIndices) {
   const cfg = REMEN_SOURCE_CONFIG[source]
   const test = getRemenTestBySourceAndId(source, id)
@@ -273,14 +310,29 @@ function calcRemenResult(source, id, answerIndices) {
   let resultText = ''
   let resultTitle = ''
 
-  if (match && match.key && conclusion[match.key]) {
-    resultText = conclusion[match.key]
+  if (match && match.key) {
+    resultText = getConclusionByLevelKey(conclusion, match.key)
     resultTitle = match.meta && match.meta.name ? match.meta.name : ''
-  } else {
+  }
+
+  if (!resultText) {
+    const levelMatch = getResultLevelMatch(cfg.data.scoreRule, total)
+    if (levelMatch && levelMatch.key) {
+      resultText = getConclusionByLevelKey(conclusion, levelMatch.key)
+      if (!resultTitle) {
+        resultTitle =
+          (levelMatch.meta && levelMatch.meta.name) ||
+          (levelMatch.meta && levelMatch.meta.level) ||
+          ''
+      }
+    }
+  }
+
+  if (!resultText) {
     const keys = Object.keys(conclusion)
     if (keys.length > 0) {
       resultText = conclusion[keys[0]] || ''
-      resultTitle = ''
+      if (!resultTitle) resultTitle = ''
     }
   }
 
