@@ -50,16 +50,25 @@ export default {
 
   onInit() {
     try {
-      if (this.$page && this.$page.query) {
-        const q = this.$page.query
+      if (this.$page) {
+        const q = this.$page.query || this.$page.params || {}
         if (q.testName) this.testName = q.testName
         if (q.testSource) this.testSource = q.testSource
         if (q.testId) this.testId = parseInt(q.testId, 10)
-        if (q.answers) {
+        if (q.answers !== undefined && q.answers !== null && String(q.answers).length > 0) {
           const rawAnswers = Array.isArray(q.answers) ? q.answers.join(',') : String(q.answers)
-          const indices = rawAnswers.split(',').map(Number)
-          this.calcResult(indices)
-          return
+          const indices = rawAnswers
+            .split(',')
+            .map(function(item) {
+              return parseInt(item, 10)
+            })
+            .filter(function(num) {
+              return !isNaN(num)
+            })
+          if (indices.length > 0) {
+            this.calcResult(indices)
+            return
+          }
         }
       }
       this.resultTitle = ''
@@ -244,9 +253,9 @@ export default {
 }
 
 .result-text {
-  font-size: 11px;
+  font-size: 10px;
   color: #333333;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 .bottom-bar {

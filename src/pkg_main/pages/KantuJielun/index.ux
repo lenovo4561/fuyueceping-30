@@ -37,20 +37,30 @@
 
 <script>
 import router from '@system.router'
+import { imagePersonalityTest } from '../../../helper/JS/tupianceshi'
 
 export default {
   private: {
     description: '',
     quizId: '',
-    quizTitle: ''
+    quizTitle: '',
+    selectedLabel: '',
+    selectedIndex: -1
   },
 
   onInit() {
-    if (this.$page && this.$page.query) {
-      const q = this.$page.query
+    if (this.$page) {
+      const q = this.$page.query || this.$page.params || {}
       if (q.description) this.description = q.description
       if (q.quizId) this.quizId = String(q.quizId)
       if (q.quizTitle) this.quizTitle = q.quizTitle
+      if (q.selectedLabel) this.selectedLabel = String(q.selectedLabel)
+      if (q.selectedIndex !== undefined) this.selectedIndex = parseInt(q.selectedIndex, 10)
+    }
+
+    const preciseDesc = this.resolveQuestionConclusion()
+    if (preciseDesc) {
+      this.description = preciseDesc
     }
 
     if (!this.description) {
@@ -59,6 +69,29 @@ export default {
     if (!this.quizTitle) {
       this.quizTitle = '看图测评'
     }
+  },
+
+  resolveQuestionConclusion() {
+    const list = (imagePersonalityTest && imagePersonalityTest.testList) || []
+    const targetId = parseInt(this.quizId, 10)
+    const item = list.find((it) => it.id === targetId)
+    if (!item || !item.conclusion || typeof item.conclusion !== 'object') return ''
+
+    const c = item.conclusion
+    if (this.selectedLabel && c[this.selectedLabel]) return c[this.selectedLabel]
+
+    const upperLabel = String(this.selectedLabel || '').toUpperCase()
+    if (upperLabel && c[upperLabel]) return c[upperLabel]
+
+    const lowerLabel = String(this.selectedLabel || '').toLowerCase()
+    if (lowerLabel && c[lowerLabel]) return c[lowerLabel]
+
+    const keys = Object.keys(c)
+    if (typeof this.selectedIndex === 'number' && this.selectedIndex >= 0 && this.selectedIndex < keys.length) {
+      return c[keys[this.selectedIndex]] || ''
+    }
+
+    return ''
   },
 
   goBack() {
@@ -184,10 +217,9 @@ export default {
 }
 
 .result_desc {
-  font-size: 10px;
+  font-size: 9px;
   color: #333333;
-  lines: 20;
-  line-height: 24px;
+  line-height: 16px;
   text-align: justify;
   margin-top: -10px;
 }

@@ -28,7 +28,7 @@
 
           <!-- 灞曞紑/鏀惰捣鎸夐挳 -->
           <div class="expand-toggle-box" onclick="toggleExpand">
-            <text class="expand-text">{{ isExpanded ? '收起' : '展开' }}</text>
+            <text class="expand-text">{{ isExpanded ? '展开' : '收起' }}</text>
             <image class="expand-icon {{ isExpanded ? 'icon-up' : '' }}" src="../../assets/img/xia.png"></image>
           </div>
         </div>

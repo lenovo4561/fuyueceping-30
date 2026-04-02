@@ -28,7 +28,7 @@
                 <image class="item-img" src="{{$item.image}}" style="background-color: #eeeeee;"></image>
                 <div class="play-count-box">
                   <div class="play-count-inner">
-                    <text class="play-count">113,256人测试</text>
+                    <text class="play-count">{{$item.playCountStr}}人测试</text>
                   </div>
                 </div>
               </stack>
@@ -122,7 +122,19 @@ export default {
 
   refreshList() {
     const adapterList = getRemenListBySource(this.activeSource) || []
-    this.testList = adapterList.length > 0 ? adapterList : getLocalListBySource(this.activeSource)
+    let list = adapterList.length > 0 ? adapterList : getLocalListBySource(this.activeSource)
+    
+    list = list.map(function(item) {
+      if (item.playCountStr) return item
+      var seed = String(item.id || item.title || '').split('').reduce(function(a, b) {
+        return a + b.charCodeAt(0)
+      }, 0)
+      var count = (seed * 8761 + 30000) % 150000 + 40000
+      var countStr = String(count).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      return Object.assign({}, item, { playCountStr: countStr })
+    })
+
+    this.testList = list
   },
 
   switchTab(source) {
@@ -200,7 +212,7 @@ export default {
 }
 
 .tab-text {
-  font-size: 12px;
+  font-size: 11px;
   color: #333333;
 }
 
@@ -259,12 +271,12 @@ export default {
 }
 
 .play-count {
-  font-size: 8px;
+  font-size: 7px;
   color: #ffffff;
 }
 
 .item-title {
-  font-size: 10px;
+  font-size: 9px;
   color: #333333;
   lines: 1;
   text-overflow: ellipsis;
@@ -281,7 +293,7 @@ export default {
   width: 100%;
   text-align: center;
   color: #999999;
-  font-size: 11px;
+  font-size: 10px;
   margin-top: 20px;
 }
 </style>

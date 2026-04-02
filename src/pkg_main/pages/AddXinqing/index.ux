@@ -73,7 +73,7 @@ export default {
       { name: '平静', icon: 'mood_calm.png' },
       { name: '压力', icon: 'mood_sad_pear.png' }
     ],
-    selectedSources: [0, 5],
+    selectedSources: [],
     sourceList: [
       '工作', '学习', '家庭', '朋友',
       '金钱', '健康', '伴侣', '宠物',
