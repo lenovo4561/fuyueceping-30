@@ -348,7 +348,7 @@ export default {
 .option-item {
   width: 218px;
   min-height: 36px;
-  padding: 4px 14px;
+  padding: 10px 10px;
   border-radius: 8px;
   margin-bottom: 12px;
   flex-direction: row;
@@ -377,7 +377,6 @@ export default {
 
 .opt-text-sel {
   color: #ff6420;
-  font-weight: bold;
 }
 
 .bottom-bar {
