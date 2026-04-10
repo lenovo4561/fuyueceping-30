@@ -7,19 +7,19 @@ const loveCoupleTest = {
     resultLevel: {
       low: {
         range: [5, 8],
-        name: '低指数 / 轻度特质'
+        name: '占有欲极低'
       },
       midLow: {
         range: [9, 12],
-        name: '中低指数 / 中度偏轻特质'
+        name: '占有度轻微'
       },
       midHigh: {
         range: [13, 16],
-        name: '中高指数 / 中度偏重特质'
+        name: '占有欲中度'
       },
       high: {
         range: [17, 20],
-        name: '高指数 / 重度特质'
+        name: '占有欲重度'
       }
     }
   },

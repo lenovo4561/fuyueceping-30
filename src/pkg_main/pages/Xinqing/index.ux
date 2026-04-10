@@ -1,21 +1,21 @@
 ﻿<template>
   <div class="xinqing-page">
     <list class="main-list">
-        <!-- 椤堕儴鑳屾櫙鍥?-->
+        <!-- 顶部背景图 -->
       <list-item type="banner" class="banner-item">
         <image class="banner-img" src="../../assets/img/meirixinqing0bg1.png"></image>
       </list-item>
 
       <list-item type="content" class="content-item">
         <div class="content-box">
-          <!-- 鏈堜唤閫夋嫨 -->
+          <!-- 月份选择 -->
           <div class="calendar-header">
             <image class="arrow-icon" src="../../assets/img/zuo.png" onclick="prevMonth" />
             <text class="month">{{monthText}}</text>
             <image class="arrow-icon" src="../../assets/img/you.png" onclick="nextMonth" />
           </div>
 
-          <!-- 鏈湀鏃ユ湡婊氬姩 -->
+          <!-- 当月日期滚动 -->
           <list class="month-list" scrollpage="false">
             <list-item type="day" class="day-item" for="{{(index, item) in monthDays}}" onclick="selectDay(index)">
               <div class="day-inner {{selectedDayIndex === index ? 'active-day' : ''}}">
@@ -26,24 +26,24 @@
             </list-item>
           </list>
 
-          <!-- 灞曞紑/鏀惰捣鎸夐挳 -->
+          <!-- 展开/收起按钮 -->
           <div class="expand-toggle-box" onclick="toggleExpand">
-            <text class="expand-text">{{ isExpanded ? '展开' : '收起' }}</text>
-            <image class="expand-icon {{ isExpanded ? 'icon-up' : '' }}" src="../../assets/img/xia.png"></image>
+            <text class="expand-text">{{ (hasAddedToday ? isExpanded : !isExpanded) ? '收起' : '下拉' }}</text>
+            <image class="expand-icon {{ (hasAddedToday ? isExpanded : !isExpanded) ? 'icon-up' : '' }}" src="../../assets/img/xia.png"></image>
           </div>
         </div>
       </list-item>
 
       <list-item type="bottom-header" class="bottom-header-item">
         <div class="bottom-card-top">
-          <!-- 鏈坊鍔犱粖鏃ユ儏缁紝绌虹姸鎬?(灞曞紑鐘舵€佹椂鏄剧ず) -->
+          <!-- 未添加当日心情时的空状态（展开时显示） -->
           <div class="empty-state" if="{{showEmptyState}}">
             <image src="../../assets/img/kong.png" class="empty-img"></image>
             <text class="empty-text">该日暂未添加心情~</text>
             <text class="add-btn" onclick="gotoAddXinqing">+添加当日心情</text>
           </div>
           
-          <!-- 鍘嗗彶璁板綍鏍囬 (鏀惰捣鐘舵€佹椂涓旀病鏈夐€変腑璁板綍鏃舵樉绀? -->
+          <!-- 历史记录标题（收起且无选中记录时显示） -->
           <div class="history-title-box" if="{{showHistoryTitle}}">
             <text class="history-month">{{currentMonth < 10 ? ('0' + currentMonth) : currentMonth}}月</text>
             <text class="history-year">/ {{currentYear}}年</text>
@@ -51,7 +51,7 @@
         </div>
       </list-item>
 
-      <!-- 閫変腑璁板綍璇︽儏鍗＄墖 -->
+      <!-- 选中记录详情卡片 -->
       <list-item type="detail" class="detail-item" if="{{showDetailCard}}">
         <div class="detail-card">
           <div class="detail-header">
@@ -61,13 +61,10 @@
             </block>
           </div>
           <text class="detail-desc">{{selectedRecord.desc}}</text>
-          <div class="detail-footer">
-            <image class="detail-del-icon" src="../../assets/img/del.png" onclick="deleteRecord"></image>
-          </div>
         </div>
       </list-item>
 
-      <!-- 鍘嗗彶璁板綍鍒楄〃锛堝綋鏃犻€変腑璁板綍鏃跺睍绀猴級 -->
+      <!-- 历史记录列表（无选中记录时显示） -->
       <list-item type="history" class="history-item" for="{{item in historyList}}" if="{{showHistoryList}}">
          <div class="history-row">
            <div class="history-left">
@@ -94,9 +91,13 @@
       </list-item>
       
       <list-item type="spacer" class="spacer-item">
-         <!-- 搴曢儴鐣欑櫧缁欏鑸爮 -->
+        <!-- 底部留白给导航栏 -->
       </list-item>
     </list>
+
+    <div class="floating-delete" if="{{showDetailCard}}" onclick="deleteRecord">
+      <image class="floating-delete-icon" src="../../assets/img/del.png"></image>
+    </div>
   </div>
 </template>
 
@@ -248,12 +249,12 @@ export default {
     const dayData = this.monthDays[this.selectedDayIndex]
     
     if (dayData.icon === 'weijilu.png') {
-      // 褰撳墠鏃ユ湡娌℃湁娣诲姞杩囧績鎯咃紝璺宠浆鍘绘坊鍔?
+      // 当前日期没有添加过心情，显示空状态和添加入口
       this.hasAddedToday = false
-      this.isExpanded = true // 鑷姩灞曞紑锛岄湶鍑烘坊鍔犳寜閽?
+      this.isExpanded = true // 自动展开，展示添加按钮
     } else {
       this.hasAddedToday = true
-      this.isExpanded = false // 閫変腑宸茶褰曠殑澶╂暟鏃舵敹璧凤紝鏄剧ず璇︽儏鍗＄墖
+      this.isExpanded = false // 选中有记录日期时收起，显示详情卡片
     }
     this.updateSelectedRecord()
   },
@@ -278,9 +279,9 @@ export default {
     const hasToday = !!this.hasAddedToday
     const hasSelectedRecord = !!this.selectedRecord
 
-    // 浜や簰瑙勫垯锛?
-    // 1) 鏈夊綋鏃ヨ褰曪細榛樿鏀惰捣鏄剧ず褰撴棩璇︽儏锛涘睍寮€鏄剧ず褰撴湀鍒楄〃骞堕殣钘忓綋鏃ヨ鎯?
-    // 2) 鏃犲綋鏃ヨ褰曪細灞曞紑鏄剧ず绌虹姸鎬侊紱鏀惰捣鏄剧ず褰撴湀鍒楄〃
+    // 交互规则：
+    // 1) 有当日记录：收起显示当日详情；展开显示当月列表并隐藏当日详情。
+    // 2) 无当日记录：展开显示空状态；收起显示当月列表。
     this.showEmptyState = expanded && !hasToday
     this.showDetailCard = !expanded && hasToday && hasSelectedRecord
     this.showHistoryTitle = expanded ? hasToday : !hasToday
@@ -292,7 +293,7 @@ export default {
     const records = (this.allRecords || []).filter((item) => this.getRecordKey(item) !== selectedKey)
     this.allRecords = records
     
-    // 鏄剧ず璇︽儏鐨勬爣蹇椾綅鍦ㄥ垹闄ゅ悗閲嶇疆
+    // 删除后重置详情展示状态
     this.hasAddedToday = false
     this.isExpanded = true
     
@@ -436,7 +437,7 @@ export default {
     const selectedDay = days[this.selectedDayIndex]
     const selectedHasRecord = !!selectedDay && selectedDay.icon !== 'weijilu.png'
 
-    // 榛樿鐘舵€侊細濡傛灉閫変腑鏃ユ湡鏈夎褰曪紝鐩存帴灞曠ず褰撴棩璇︽儏锛涘惁鍒欏睍绀虹┖鐘舵€?
+    // 默认状态：选中日期有记录则显示详情，否则显示空状态
     this.hasAddedToday = selectedHasRecord
     this.isExpanded = !selectedHasRecord
 
@@ -464,6 +465,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: #FFFFFF;
+  position: relative;
 }
 
 .main-list {
@@ -764,7 +766,7 @@ export default {
 }
 
 .history-desc {
-  font-size: 10px;
+  font-size: 8px;
   color: #333333;
   line-height: 16px;
   lines: 3;
@@ -783,7 +785,8 @@ export default {
   flex-direction: column;
   background-color: #FFFFFF;
   border-radius: 13px;
-  padding: 16px 10px;
+  padding: 16px 10px 60px 10px;
+  position: relative;
 }
 
 .detail-header {
@@ -814,14 +817,24 @@ export default {
   margin-bottom: 20px;
 }
 
-.detail-footer {
-  flex-direction: row;
-  justify-content: flex-end;
+.detail-del-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
-.detail-del-icon {
-  width: 32px;
-  height: 32px;
+.floating-delete {
+  position: absolute;
+  right: 12px;
+  bottom: 78px;
+  width: 24px;
+  height: 24px;
+  z-index: 30;
+}
+
+.floating-delete-icon {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 

@@ -47,25 +47,6 @@
         </div>
       </div>
     </div>
-
-    <div class="tab-bar">
-      <div class="tab-item" onclick="goToTab(0)">
-        <image class="tab-icon" src="../../assets/img/ceping-u.png"></image>
-        <text class="tab-text" style="color: #999999">热门测评</text>
-      </div>
-      <div class="tab-item" onclick="goToTab(1)">
-        <image class="tab-icon" src="../../assets/img/kantu-s.png"></image>
-        <text class="tab-text" style="color: #FFFFFF">看图测评</text>
-      </div>
-      <div class="tab-item" onclick="goToTab(2)">
-        <image class="tab-icon" src="../../assets/img/xingqing-u.png"></image>
-        <text class="tab-text" style="color: #999999">每日心情</text>
-      </div>
-      <div class="tab-item" onclick="goToTab(3)">
-        <image class="tab-icon" src="../../assets/img/mine-u.png"></image>
-        <text class="tab-text" style="color: #999999">我的</text>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -146,15 +127,6 @@ export default {
     router.back()
   },
 
-  goToTab(index) {
-    router.replace({
-      uri: '/pkg_main/pages/Main',
-      params: {
-        tabIndex: index
-      }
-    })
-  },
-
   selectOption(index) {
     this.selectedOptionIndex = index
   },
@@ -228,8 +200,8 @@ export default {
 
 .back_btn {
   position: absolute;
-  left: 2px;
-  top: 16px;
+  left: 6px;
+  top: 22px;
   width: 22px;
   height: 22px;
   justify-content: center;
@@ -315,7 +287,7 @@ export default {
 .question_desc {
   font-size: 10px;
   color: #333333;
-  font-weight: bold;
+  font-weight: normal;
   margin-bottom: 8px;
   line-height: 18px;
 }
@@ -346,11 +318,11 @@ export default {
 
 .option_item {
   width: 100%;
-  background-color: #f7f7f7;
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  border: 1px solid #f7f7f7;
+  border: 1px solid #EDEDED;
+  background-color: rgba(217, 217, 217, 0.10);
 }
 
 .option_text {
@@ -382,39 +354,6 @@ export default {
   color: #ffffff;
   font-size: 13px;
   font-weight: bold;
-}
-
-.tab-bar {
-  position: fixed;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  height: 48px;
-  background-color: #1a1a1a;
-  border-radius: 24px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
-  z-index: 9999;
-}
-
-.tab-item {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  height: 100%;
-}
-
-.tab-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  margin-bottom: 2px;
-}
-
-.tab-text {
-  font-size: 8px;
 }
 </style>
 

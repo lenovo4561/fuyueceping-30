@@ -7,19 +7,19 @@ const personalityTest = {
     resultLevel: {
       low: {
         range: [5, 8],
-        name: '低指数 / 轻度特质'
+        name: '伪装度 10% 以下'
       },
       midLow: {
         range: [9, 12],
-        name: '中低指数 / 中度偏轻特质'
+        name: '伪装度 30% 左右'
       },
       midHigh: {
         range: [13, 16],
-        name: '中高指数 / 中度偏重特质'
+        name: '伪装度 60% 左右'
       },
       high: {
         range: [17, 20],
-        name: '高指数 / 重度特质'
+        name: '伪装度 90% 以上'
       }
     }
   },

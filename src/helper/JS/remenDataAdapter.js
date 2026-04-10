@@ -274,6 +274,95 @@ function getResultLevelMatch(scoreRule, score) {
   return null
 }
 
+function getOptionKeyByIndex(index) {
+  return index === 0
+    ? 'A'
+    : index === 1
+    ? 'B'
+    : index === 2
+    ? 'C'
+    : index === 3
+    ? 'D'
+    : ''
+}
+
+function getQuestionOptionConclusion(question, optKey, answerIndex) {
+  if (
+    !question ||
+    !question.conclusion ||
+    typeof question.conclusion !== 'object'
+  ) {
+    return ''
+  }
+
+  const c = question.conclusion
+  if (optKey && c[optKey]) return c[optKey]
+  const lower = optKey ? String(optKey).toLowerCase() : ''
+  if (lower && c[lower]) return c[lower]
+  const optionKey = 'option' + String(answerIndex + 1)
+  if (c[optionKey]) return c[optionKey]
+
+  const keys = Object.keys(c)
+  if (answerIndex >= 0 && answerIndex < keys.length) {
+    return c[keys[answerIndex]] || ''
+  }
+
+  return ''
+}
+
+function buildQuestionLevelConclusion(test, answerIndices) {
+  if (
+    !test ||
+    !Array.isArray(test.questions) ||
+    !Array.isArray(answerIndices)
+  ) {
+    return ''
+  }
+
+  const sections = []
+  const answerPath = []
+  for (let i = 0; i < test.questions.length && i < answerIndices.length; i++) {
+    const q = test.questions[i]
+    const ansIdx = answerIndices[i]
+    if (typeof ansIdx !== 'number' || ansIdx < 0) continue
+
+    const optKey = getOptionKeyByIndex(ansIdx)
+    answerPath.push(optKey || '-')
+    const questionConclusion = getQuestionOptionConclusion(q, optKey, ansIdx)
+    const qNo = q && q.qNo ? q.qNo : i + 1
+    if (questionConclusion) {
+      sections.push('第' + qNo + '题：' + questionConclusion)
+      continue
+    }
+
+    const title = q && q.title ? q.title : ''
+    const options =
+      q && q.options && typeof q.options === 'object' ? q.options : {}
+    const selectedOptionText = optKey && options[optKey] ? options[optKey] : ''
+    if (title || selectedOptionText) {
+      sections.push(
+        '第' +
+          qNo +
+          '题（' +
+          title +
+          '）\n你的选择：' +
+          (optKey || '-') +
+          ' ' +
+          selectedOptionText
+      )
+      continue
+    }
+
+    sections.push('第' + qNo + '题：你的选择是 ' + (optKey || '-'))
+  }
+
+  if (sections.length === 0) return ''
+
+  const profile = answerPath.length > 0 ? answerPath.join('-') : ''
+  const profileText = profile ? '答案路径：' + profile : ''
+  return (profileText ? profileText + '\n\n' : '') + sections.join('\n\n')
+}
+
 function calcRemenResult(source, id, answerIndices) {
   const cfg = REMEN_SOURCE_CONFIG[source]
   const test = getRemenTestBySourceAndId(source, id)
