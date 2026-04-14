@@ -47,12 +47,6 @@
       "pkg_main/pages/Main": {
         "component": "index"
       },
-      "pkg_main/pages/Demo": {
-        "component": "index"
-      },
-      "pkg_main/pages/DemoDetail": {
-        "component": "index"
-      },
       "pkg_main/pages/Remen": {
         "component": "index"
       },
@@ -97,13 +91,6 @@
       "pkg_main/pages/Main": {
         "titleBar": false,
         "menu": false
-      },
-      "pkg_main/pages/Demo": {
-        "titleBarText": "快应用示例模版",
-        "menu": false
-      },
-      "pkg_main/pages/DemoDetail": {
-        "titleBarText": "详情页"
       },
       "pkg_main/pages/Remen": {
         "titleBar": false,

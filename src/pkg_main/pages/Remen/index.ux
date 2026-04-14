@@ -189,6 +189,59 @@ export default {
   object-fit: cover;
 }
 
+.top-bg-elements {
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 25px; /* Leave space for tabs */
+}
+
+.bg-left-wrap {
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  margin-top: 25px;
+}
+
+.bg-title-wrap {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bg-icon-left {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-right: 0px;
+}
+
+.bg-icon-wenzi {
+  width: 90px;
+  height: 15px;
+  object-fit: contain;
+}
+
+.bg-icon-dibu {
+  width: 130px;
+  height: 10px;
+  object-fit: contain;
+}
+
+.bg-icon-right {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+}
+
 .tabs-container {
   flex-direction: row;
   justify-content: space-between;

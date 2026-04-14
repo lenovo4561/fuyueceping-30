@@ -13,7 +13,7 @@
   <div class="card-wrapper">
     <div class="title-wrapper">
       <!-- 注意：本地图片资源需要存放到卡片路由路径下，否则发布时无法加载该图片，网络资源不受该限制 -->
-      <image class="title-logo" src="./assets/logo_card.png"></image>
+      <image class="title-logo" src="/pkg_main/assets/img/logo_card.png"></image>
       <text class="title-txt">卡片标题</text>
     </div>
     <div class="content-wrapper">

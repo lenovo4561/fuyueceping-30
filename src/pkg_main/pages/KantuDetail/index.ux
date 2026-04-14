@@ -1,12 +1,12 @@
 ﻿<template>
   <div class="page_container">
     <div class="top_area">
-      <image class="top_bg" src="../../assets/img/kantuceping-bg.png"></image>
-
+      <image class="top_bg" src="../../assets/img/kantuceping-bg2.png"></image>
       <div class="navbar">
         <div class="back_btn" onclick="goBack">
-          <image class="back_icon" src="../../assets/img/back.png"></image>
+          <image class="back_icon" src="../../assets/img/jiantou1.png"></image>
         </div>
+        <div style="width: 22px;"></div>
       </div>
     </div>
 
@@ -17,36 +17,38 @@
       </div>
     </div>
 
-    <div class="content_card">
-      <div class="progress_area">
-        <text class="progress_text"><span style="color:#ff7500; font-weight:bold;">1</span>/1</text>
-        <div class="progress_bar_bg">
-          <div class="progress_bar_fill"></div>
+    <stack class="content_card">
+      <div class="blur-layer"></div>
+      <div class="frost-overlay"></div>
+      
+      <div class="content_card_inner">
+        <div class="progress_area">
+          <text class="progress_text"><span style="color:#ff7500; font-weight:bold;">1</span>/1</text>
+          <div class="progress_bar_bg">
+            <div class="progress_bar_fill"></div>
+          </div>
+        </div>
+        <text class="question_desc">{{ currentQuestion.question }}</text>
+        <div class="question_img_wrapper">
+          <image class="question_img" src="{{ questionImage }}"></image>
+        </div>
+        <div class="options_list">
+          <div
+            class="option_item {{selectedOptionIndex === index ? 'option_selected' : ''}}"
+            for="{{(index, option) in currentQuestion.options}}"
+            onclick="selectOption(index)"
+          >
+            <text class="option_text">{{ option.label }}.{{ option.text }}</text>
+          </div>
+        </div>
+
+        <div class="confirm_btn_wrapper">
+          <div class="confirm_btn" onclick="onConfirm">
+            <text class="confirm_text">查看结果</text>
+          </div>
         </div>
       </div>
-
-      <text class="question_desc">{{ currentQuestion.question }}</text>
-
-      <div class="question_img_wrapper">
-        <image class="question_img" src="{{ questionImage }}"></image>
-      </div>
-
-      <div class="options_list">
-        <div
-          class="option_item {{selectedOptionIndex === index ? 'option_selected' : ''}}"
-          for="{{(index, option) in currentQuestion.options}}"
-          onclick="selectOption(index)"
-        >
-          <text class="option_text">{{ option.label }}.{{ option.text }}</text>
-        </div>
-      </div>
-
-      <div class="confirm_btn_wrapper">
-        <div class="confirm_btn" onclick="onConfirm">
-          <text class="confirm_text">查看结果</text>
-        </div>
-      </div>
-    </div>
+    </stack>
   </div>
 </template>
 
@@ -174,45 +176,79 @@ export default {
 }
 
 .top_area {
-  width: 100%;
+  width: 250px;
   height: 140px;
   position: relative;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .top_bg {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 140px;
   object-fit: cover;
+}
+
+.top_bg_elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 130px;
+  flex-direction: row;
+  align-items: flex-start;
+  padding-left: 14px;
+  padding-top: 32px;
+}
+
+.bg_icon_wenzi {
+  width: 90px;
+  height: 15px;
+  object-fit: contain;
+  margin-top: 2px;
+  margin-left: 12px;
+}
+
+.bg_icon_right {
+  position: absolute;
+  right: 0;
+  top: -15px;
+  width: 170px;
+  height: 170px;
+  object-fit: contain;
 }
 
 .navbar {
   position: absolute;
-  top: 15px;
+  top: 0;
   left: 0;
-  width: 100%;
-  height: 44px;
+  width: 250px;
+  height: 60px;
   flex-direction: row;
   align-items: center;
-  padding: 0 15px;
-  z-index: 10;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  overflow: visible;
 }
 
 .back_btn {
-  position: absolute;
-  left: 6px;
-  top: 22px;
   width: 22px;
   height: 22px;
-  justify-content: center;
+  border-radius: 12px;
+  background-color: #ffffff;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 13px;
+  justify-content: center;
+  position: relative;
+  left: -8px;
+  top: 20px;
 }
 
 .back_icon {
-  width: 6px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   object-fit: contain;
 }
 
@@ -250,11 +286,42 @@ export default {
 .content_card {
   margin-left: 16px;
   margin-right: 16px;
-  background-color: #ffffff;
   border-radius: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.blur-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.frost-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.60) 0%,
+    rgba(255, 255, 255, 1.0) 15%,
+    rgba(255, 255, 255, 1.0) 100%
+  );
+}
+
+.content_card_inner {
+  width: 100%;
   padding: 12px 16px 16px 16px;
   flex-direction: column;
-  margin-bottom: 20px;
 }
 
 .progress_area {
@@ -265,7 +332,7 @@ export default {
 }
 
 .progress_text {
-  font-size: 14px;
+  font-size: 10px;
   color: #999999;
   margin-right: 10px;
 }

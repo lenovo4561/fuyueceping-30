@@ -2,8 +2,20 @@
   <div class="xinqing-page">
     <list class="main-list">
         <!-- 顶部背景图 -->
-      <list-item type="banner" class="banner-item">
-        <image class="banner-img" src="../../assets/img/meirixinqing0bg1.png"></image>
+      <list-item type="header" class="kantu-header">
+        <stack class="header-stack">
+          <image class="top-bg" src="../../assets/img/3/home3_header_bg.png"></image>
+          <div class="top-bg-elements">
+            <div class="bg-left-wrap">
+              <div class="bg-title-wrap">
+                <image class="bg-icon-left" src="../../assets/img/3/home3_icon.png"></image>
+                <image class="bg-icon-wenzi" src="../../assets/img/3/home3_icon_wenzi.png"></image>
+              </div>
+              <image class="bg-icon-dibu" src="../../assets/img/3/home3_icon_wenzi_dibu.png"></image>
+            </div>
+            <image class="bg-icon-right" src="../../assets/img/3/home3_icon_right.png"></image>
+          </div>
+        </stack>
       </list-item>
 
       <list-item type="content" class="content-item">
@@ -473,22 +485,80 @@ export default {
   width: 100%;
 }
 
-.banner-item {
+.kantu-header {
   width: 100%;
-  flex-direction: column;
-  background-color: #F6F7F9;
+  height: 150px;
+  padding: 0;
 }
 
-.banner-img {
+.header-stack {
   width: 100%;
-  height: 120px;
+  height: 150px;
+}
+
+.top-bg {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+.top-bg-elements {
+  width: 100%;
+  height: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 25px;
+}
+
+.bg-left-wrap {
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  margin-top: 25px;
+}
+
+.bg-title-wrap {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bg-icon-left {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-right: 0px;
+}
+
+.bg-icon-wenzi {
+  width: 90px;
+  height: 15px;
+  object-fit: contain;
+}
+
+.bg-icon-dibu {
+  width: 130px;
+  height: 10px;
+  object-fit: contain;
+}
+
+.bg-icon-right {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
 }
 
 .content-item {
   width: 100%;
   flex-direction: column;
-  margin-top: -10px;
+  margin-top: -40px;
   background-color: #F6F7F9;
 }
 
@@ -629,15 +699,15 @@ export default {
 }
 
 .empty-img {
-  width: 133px;
-  height: 133px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
 }
 
 .empty-text {
-  font-size: 9px;
+  font-size: 6px;
   color: #B0B0B0;
-  margin-top: 3px;
+  margin-top: 1px;
 }
 
 .add-btn {

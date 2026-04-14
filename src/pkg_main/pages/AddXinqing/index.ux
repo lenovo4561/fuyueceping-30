@@ -2,36 +2,42 @@
   <div class="add-xinqing-page">
     <list class="content-list">
       <list-item type="header" class="header-item">
-        <stack class="header">
-          <image class="bg-img" src="../../assets/img/jinrixinqing-bg.png"></image>
-          <div class="nav-bar">
-            <div class="back-btn" onclick="goBack">
-              <image class="back-icon" src="../../assets/img/back.png"></image>
+        <stack class="top_area">
+          <image class="top_bg" src="../../assets/img/jinrixinqing-bg.png"></image>
+
+          <div class="navbar">
+            <div class="back_btn" onclick="goBack">
+              <image class="back_icon" src="../../assets/img/jiantou1.png"></image>
             </div>
+            <div style="width: 22px;"></div>
           </div>
         </stack>
       </list-item>
 
       <list-item type="main-card" class="main-card-item">
-        <div class="main-card">
-          <text class="section-title">你今天心情怎么样？</text>
-          <div class="mood-grid">
-            <div class="mood-item {{selectedMood === index ? 'mood-item-active' : ''}}" for="{{(index, item) in moodList}}" onclick="selectMood(index)">
-              <image class="mood-icon" src="../../assets/img/{{item.icon}}"></image>
-              <text class="mood-name">{{item.name}}</text>
+        <div class="cards-wrapper">
+          <div class="main-card">
+            <text class="section-title">你今天心情怎么样？</text>
+            <div class="mood-grid">
+              <div class="mood-item {{selectedMood === index ? 'mood-item-active' : ''}}" for="{{(index, item) in moodList}}" onclick="selectMood(index)">
+                <image class="mood-icon" src="../../assets/img/{{item.icon}}"></image>
+                <text class="mood-name">{{item.name}}</text>
+              </div>
             </div>
           </div>
 
-          <div class="section-divider"></div>
-
-          <text class="section-title source-title">你的情绪来源于哪里？</text>
-          <div class="source-grid">
-            <div class="source-item {{selectedSources.indexOf(index) > -1 ? 'source-item-active' : ''}} {{index === 8 || index === 9 ? 'source-item-large' : ''}}" for="{{(index, item) in sourceList}}" onclick="toggleSource(index)">  
-              <text class="source-name {{selectedSources.indexOf(index) > -1 ? 'source-name-active' : ''}}">{{item}}</text>
+          <div class="main-card">
+            <text class="section-title source-title">你的情绪来源于哪里？</text>
+            <div class="source-grid">
+              <div class="source-item {{selectedSources.indexOf(index) > -1 ? 'source-item-active' : ''}} {{index === 8 || index === 9 ? 'source-item-large' : ''}}" for="{{(index, item) in sourceList}}" onclick="toggleSource(index)">  
+                <text class="source-name {{selectedSources.indexOf(index) > -1 ? 'source-name-active' : ''}}">{{item}}</text>
+              </div>
             </div>
           </div>
 
-          <textarea class="feeling-input" placeholder="记录你此刻的感受" onchange="onFeelingInput"></textarea>
+          <div class="main-card card-input">
+            <textarea class="feeling-input" placeholder="记录你此刻的感受" onchange="onFeelingInput"></textarea>
+          </div>
         </div>
       </list-item>
 
@@ -286,46 +292,80 @@ export default {
   background-color: #F3F4F7;
 }
 
-.header {
-  width: 100%;
-  height: 137px;
+.top_area {
+  width: 250px;
+  height: 140px;
   position: relative;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.bg-img {
-  width: 100%;
-  height: 137px;
+.top_bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 140px;
   object-fit: cover;
 }
 
-.nav-bar {
+.top_bg_elements {
   position: absolute;
-  top: 15px;
+  top: 0;
   left: 0;
-  width: 100%;
-  height: 44px;
-  padding: 0 15px;
+  width: 250px;
+  height: 130px;
+  flex-direction: row;
+  align-items: flex-start;
+  padding-left: 14px;
+  padding-top: 32px;
+}
+
+.bg_icon_wenzi {
+  width: 90px;
+  height: 15px;
+  object-fit: contain;
+  margin-top: 2px;
+  margin-left: 12px;
+}
+
+.bg_icon_right {
+  position: absolute;
+  right: 0;
+  top: -15px;
+  width: 170px;
+  height: 170px;
+  object-fit: contain;
+}
+
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 60px;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  z-index: 10;
+  justify-content: space-between;
+  padding: 0 14px;
+  overflow: visible;
 }
 
-.back-btn {
-  position: absolute;
-  left: 2px;
-  top: 22px;
-  width: 22px;
-  height: 22px;
-  border-radius: 13px;
-  background-color: rgba(255, 255, 255, 0.5);
-  justify-content: center;
+.back_btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 12px;
+  background-color: #ffffff;
   align-items: center;
+  justify-content: center;
+  position: relative;
+  left: -8px;
+  top: 20px;
 }
 
-.back-icon {
-  width: 6px;
-  height: 10px;
+.back_icon {
+  width: 12px;
+  height: 12px;
   object-fit: contain;
 }
 
@@ -352,12 +392,17 @@ export default {
   margin-top: -59px;
 }
 
+.cards-wrapper {
+  width: 100%;
+  flex-direction: column;
+}
+
 .main-card {
   width: 100%;
   flex-direction: column;
   border-radius: 12px;
   border: 1px solid #FFFFFF;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
   backdrop-filter: blur(2px);
   padding: 11px 8px 12px;
   margin-bottom: 10px;
@@ -406,14 +451,6 @@ export default {
   color: #2B2B2B;
 }
 
-.section-divider {
-  width: 100%;
-  height: 1px;
-  background-color: #EDEEF2;
-  margin-top: 3px;
-  margin-bottom: 9px;
-}
-
 .source-title {
   margin-bottom: 8px;
 }
@@ -450,14 +487,20 @@ export default {
   color: #28AEEA;
 }
 
+.card-input {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #FFFFFF;
+}
+
 .feeling-input {
   width: 100%;
   height: 96px;
-  margin-top: 3px;
   font-size: 11px;
   color: #333333;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 11px 12px;
+  border-radius: 12px;
   background-color: #FFFFFF;
   placeholder-color: #A7ADB5;
 }
