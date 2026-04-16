@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page_container">
     <div class="top_area">
-      <image class="top_bg" src="../../assets/img/kantuceping-bg2.png"></image>
+      <image class="top_bg" src="https://cdn.shijinzhuang.com/quick/fuycp/5.png"></image>
       <div class="navbar">
         <div class="back_btn" onclick="goBack">
           <image class="back_icon" src="../../assets/img/jiantou1.png"></image>

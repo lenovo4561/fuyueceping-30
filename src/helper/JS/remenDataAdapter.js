@@ -274,6 +274,24 @@ function getResultLevelMatch(scoreRule, score) {
   return null
 }
 
+function getResultTitleByMeta(meta, test) {
+  if (!meta) return ''
+
+  const name = meta.name
+  if (typeof name === 'string') return name
+
+  if (Array.isArray(name)) {
+    const idx = test && typeof test.id === 'number' ? test.id - 1 : -1
+    if (idx >= 0 && idx < name.length && typeof name[idx] === 'string') {
+      return name[idx]
+    }
+    return typeof name[0] === 'string' ? name[0] : ''
+  }
+
+  if (typeof meta.level === 'string') return meta.level
+  return ''
+}
+
 function getOptionKeyByIndex(index) {
   return index === 0
     ? 'A'
@@ -401,7 +419,7 @@ function calcRemenResult(source, id, answerIndices) {
 
   if (match && match.key) {
     resultText = getConclusionByLevelKey(conclusion, match.key)
-    resultTitle = match.meta && match.meta.name ? match.meta.name : ''
+    resultTitle = getResultTitleByMeta(match.meta, test)
   }
 
   if (!resultText) {
@@ -409,10 +427,7 @@ function calcRemenResult(source, id, answerIndices) {
     if (levelMatch && levelMatch.key) {
       resultText = getConclusionByLevelKey(conclusion, levelMatch.key)
       if (!resultTitle) {
-        resultTitle =
-          (levelMatch.meta && levelMatch.meta.name) ||
-          (levelMatch.meta && levelMatch.meta.level) ||
-          ''
+        resultTitle = getResultTitleByMeta(levelMatch.meta, test)
       }
     }
   }

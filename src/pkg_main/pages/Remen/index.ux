@@ -3,7 +3,7 @@
     <list class="remen-list">
       <list-item type="header" class="header-section">
         <stack class="header-stack">
-          <image class="top-bg" src="../../assets/img/hotceping-bg.png"></image>
+          <image class="top-bg" src="https://cdn.shijinzhuang.com/quick/fuycp/1.png"></image>
           <div class="tabs-container">
             <block for="{{tabs}}">
               <div

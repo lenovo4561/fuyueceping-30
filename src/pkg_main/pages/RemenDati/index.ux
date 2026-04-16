@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-wrapper">
     <div class="header-area">
-      <image class="top-bg" src="../../assets/img/cepingdati-bg.png"></image>
+      <image class="top-bg" src="https://cdn.shijinzhuang.com/quick/fuycp/4.png"></image>
       <div class="nav-bar">
         <div class="back-btn" onclick="goBack">
           <image class="back-icon" src="../../assets/img/jiantou1.png"></image>
